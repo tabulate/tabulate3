@@ -18,6 +18,10 @@ class Config {
         return $default;
     }
 
+    public static function debug() {
+        return (bool) self::get('debug', false);
+    }
+
     /**
      * Get the Base URL of the application. Never has a trailing slash.
      * @return string
@@ -63,7 +67,11 @@ class Config {
         }
         $dataDir = $dataDir . '/' . $dir . '/' . $subdir;
         if (!file_exists($dataDir)) {
-            mkdir($dataDir, 0755, true);
+            try {
+                mkdir($dataDir, 0755, true);
+            } catch (\Exception $e) {
+                throw new \Exception("Unable to create directory '$dataDir'", 500);
+            }
         }
         return realpath($dataDir);
     }

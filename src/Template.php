@@ -34,6 +34,7 @@ class Template {
             'tabulate_version' => TABULATE_VERSION,
             'notices' => $notices,
             'baseurl' => Config::baseUrl(),
+            'debug' => Config::debug(),
             'site_title' => Config::siteTitle(),
         );
         self::add_path(__DIR__ . '/../templates');

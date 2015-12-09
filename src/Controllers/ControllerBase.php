@@ -5,7 +5,6 @@ namespace Tabulate\Controllers;
 abstract class ControllerBase {
 
     public function __construct() {
-        session_start();
     }
 
     protected function redirect($route) {
