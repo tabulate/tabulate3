@@ -23,7 +23,7 @@ class MapController extends ControllerBase {
 			return;
 		}
 		$point_col = array_shift( $points );
-		$this->point_col_name = $point_col->get_name();
+		$this->point_col_name = $point_col->getName();
 
 		// Apply filters.
 		$filter_param = (isset( $args['filter'] )) ? $args['filter'] : array();
@@ -52,13 +52,13 @@ class MapController extends ControllerBase {
 			$node->addAttribute( 'lon', $geom->getX() );
 			$node->addAttribute( 'visible', 'true' ); // Required attribute.
 			foreach ( $this->table->get_columns() as $col ) {
-				if ( $col->get_name() == $this->point_col_name ) {
+				if ( $col->getName() == $this->point_col_name ) {
 					// Don't include the geometry column.
 					// @todo Exclude other spatial columns?
 					continue;
 				}
 				$tag = $node->addChild( 'tag' );
-				$col_name = $col->get_name();
+				$col_name = $col->getName();
 				$tag->addAttribute( 'k', $col_name );
 				$fktitle = $col_name . \WordPress\Tabulate\DB\Record::FKTITLE;
 				$tag->addAttribute( 'v', $record->$fktitle() );
@@ -78,7 +78,7 @@ class MapController extends ControllerBase {
 		$kml_doc = $kml->addChild( 'Document' );
 		foreach ( $this->table->get_records( false ) as $record ) {
 			$placemark = $kml_doc->addChild( 'Placemark' );
-			$placemark->addChild( 'name', $record->get_title() );
+			$placemark->addChild( 'name', $record->getTitle() );
 			$placemark->addChild( 'description', htmlentities( '<a href="' . $record->get_url() . '">View record.</a>' ) );
 			$point = $placemark->addChild( 'Point' );
 			$geom = \geoPHP::load( $record->{$this->point_col_name}() );
@@ -102,20 +102,20 @@ class MapController extends ControllerBase {
 			$wpt = $gpx->addChild( 'wpt' );
 			$wpt->addAttribute( 'lat', $geom->getY() );
 			$wpt->addAttribute( 'lon', $geom->getX() );
-			$wpt->addChild( 'name', $record->get_title() );
+			$wpt->addChild( 'name', $record->getTitle() );
 			$wpt->addChild( 'description', htmlentities( '<a href="' . $record->get_url() . '">View record.</a>' ) );
 			$extensions = $wpt->addChild( 'extensions' );
 			$waypoint_extension = $extensions->addChild( 'gpxx:WaypointExtension', '', 'gpxx' );
 			$categories = $waypoint_extension->addChild( 'gpxx:Categories', '', 'gpxx' );
 			foreach ( $this->table->get_columns() as $col ) {
-				if ( $col->get_name() == $this->point_col_name ) {
+				if ( $col->getName() == $this->point_col_name ) {
 					// Don't include the geometry column.
 					continue;
 				}
-				$fktitle = $col->get_name() . \WordPress\Tabulate\DB\Record::FKTITLE;
+				$fktitle = $col->getName() . \WordPress\Tabulate\DB\Record::FKTITLE;
 				$value = $record->$fktitle();
-				$categories->addChild( 'gpxx:Categories', $col->get_title() . ": $value", 'gpxx' );
-				$waypoint_extension->addChild( 'gpxx:'.$col->get_name(), $value, 'gpxx' );
+				$categories->addChild( 'gpxx:Categories', $col->getTitle() . ": $value", 'gpxx' );
+				$waypoint_extension->addChild( 'gpxx:'.$col->getName(), $value, 'gpxx' );
 			}
 		}
 
@@ -124,7 +124,7 @@ class MapController extends ControllerBase {
 	}
 
 	protected function send_file( $ext, $mime, $content, $download_name = false ) {
-		$download_name = date( 'Y-m-d' ) . '_' . $this->table->get_name();
+		$download_name = date( 'Y-m-d' ) . '_' . $this->table->getName();
 		parent::send_file( $ext, $mime, $content, $download_name );
 	}
 

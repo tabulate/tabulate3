@@ -18,9 +18,9 @@ class ChangeTrackerTest extends TestBase {
 	 */
 	public function activate() {
 		$changesets = $this->db->get_table( $this->wpdb->prefix . TABULATE_SLUG . '_changesets' );
-		$this->assertEquals( $this->wpdb->prefix . TABULATE_SLUG . '_changesets', $changesets->get_name() );
+		$this->assertEquals( $this->wpdb->prefix . TABULATE_SLUG . '_changesets', $changesets->getName() );
 		$changes = $this->db->get_table( $this->wpdb->prefix . TABULATE_SLUG . '_changes' );
-		$this->assertEquals( $this->wpdb->prefix . TABULATE_SLUG . '_changes', $changes->get_name() );
+		$this->assertEquals( $this->wpdb->prefix . TABULATE_SLUG . '_changes', $changes->getName() );
 	}
 
 	/**

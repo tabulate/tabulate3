@@ -1,30 +1,21 @@
-# Tabulate
-* Contributors: samwilson
-* Donate link: https://www.bushheritage.org.au/donatenow
-* Tags: MySQL, databases, tables, data, CRUD, import, export, CSV, shortcode, OpenStreetMap, KML
-* Requires at least: 4.2
-* Tested up to: 4.3
-* Stable tag: trunk
-* License: GPLv2 or later
-* License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Tabulate
+========
 
-Manage relational tabular data within the WP admin area, using the full power of
-your MySQL database. CSV import/export; access-control; foreign-keys.
-
-## Description
+Tabulate is a user-friendly web interface to MySQL databases.
 
 [![Build Status](https://img.shields.io/travis/tabulate/tabulate.svg?style=flat-square)](https://travis-ci.org/tabulate/tabulate)
 [![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/tabulate/tabulate/master.svg?style=flat-square)](https://scrutinizer-ci.com/g/tabulate/tabulate/?branch=master)
-[![Total Downloads](https://img.shields.io/wordpress/plugin/dt/tabulate.svg?style=flat-square)]()
-[![WordPress rating](https://img.shields.io/wordpress/plugin/r/tabulate.svg?style=flat-square)]()
-[![Latest Stable Version](https://img.shields.io/wordpress/plugin/v/tabulate.svg?style=flat-square)](https://wordpress.org/plugins/tabulate)
-[![WordPress version](https://img.shields.io/wordpress/v/tabulate.svg?style=flat-square)]()
 [![License](https://img.shields.io/github/license/tabulate/tabulate.svg?style=flat-square)](https://github.com/tabulate/tabulate/blob/master/LICENSE.txt)
 
-This plugin provides a simple user-friendly interface to tables in the database.
-Somewhat akin to phpMyAdmin, but including only data-modification features.
+## Install
 
-Features (in no particular order):
+1. Clone from git: `git clone https://github.com/tabulate/tabulate3`
+2. Update dependencies: `composer update`
+3. Create configuration file: `cp config.dist.php config.php`
+4. Edit configuration file
+5. Run the upgrade script: `./tabulate upgrade`
+
+## Features
 
 1.  Tables can be filtered by any column or columns, and with a range of
     operators ('contains', 'is', 'empty', 'one of', 'greater than', 'less than',

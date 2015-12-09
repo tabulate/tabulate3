@@ -1,6 +1,7 @@
 /vendor
 /.svn
 /testdox.html
-/svn_ignore_list.txt
-/components
+/assets/components
+/nbproject/private/
+/config.php
 

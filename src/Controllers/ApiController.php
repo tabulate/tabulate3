@@ -42,8 +42,8 @@ class ApiController extends ControllerBase {
 		$out = array();
 		foreach ( $tables as $table ) {
 			$out[] = array(
-				'value' => $table->get_name(),
-				'label' => $table->get_title(),
+				'value' => $table->getName(),
+				'label' => $table->getTitle(),
 			);
 		}
 		return $out;
@@ -58,8 +58,8 @@ class ApiController extends ControllerBase {
 		$tables = $db->get_tables();
 		$out = array();
 		foreach ( $tables as $table ) {
-			if ( Grants::current_user_can( Grants::CREATE, $table->get_name() ) ) {
-				$out[] = $table->get_name();
+			if ( Grants::current_user_can( Grants::CREATE, $table->getName() ) ) {
+				$out[] = $table->getName();
 			}
 		}
 		return $out;
@@ -101,9 +101,9 @@ class ApiController extends ControllerBase {
 		$table->add_filter( $table->get_title_column(), $operator, $term );
 		$out = array();
 		foreach ( $table->get_records() as $record ) {
-			$out[ $record->get_primary_key() ] = array(
-				'value' => $record->get_primary_key(),
-				'label' => $record->get_title(),
+			$out[ $record->getPrimaryKey() ] = array(
+				'value' => $record->getPrimaryKey(),
+				'label' => $record->getTitle(),
 			);
 		}
 		return $out;

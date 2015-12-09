@@ -36,7 +36,7 @@ class SchemaController extends ControllerBase {
 		$new_name = $args['schema'];
 		if ( $schema instanceof Table && ! empty( $args['new_name'] ) ) {
 			$schema->rename( $args['new_name'] );
-			$new_name = $schema->get_name();
+			$new_name = $schema->getName();
 		}
 		$template = new Template( 'schema.html' );
 		$template->add_notice( 'updated', 'Schema updated.' );

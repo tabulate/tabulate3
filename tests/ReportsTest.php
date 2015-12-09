@@ -17,9 +17,9 @@ class ReportsTest extends TestBase {
 	 */
 	public function activate() {
 		$reports = $this->db->get_table( Reports::reports_table_name() );
-		$this->assertEquals( $this->wpdb->prefix . TABULATE_SLUG . '_reports', $reports->get_name() );
+		$this->assertEquals( $this->wpdb->prefix . TABULATE_SLUG . '_reports', $reports->getName() );
 		$reportSources = $this->db->get_table( Reports::report_sources_table_name() );
-		$this->assertEquals( $this->wpdb->prefix . TABULATE_SLUG . '_report_sources', $reportSources->get_name() );
+		$this->assertEquals( $this->wpdb->prefix . TABULATE_SLUG . '_report_sources', $reportSources->getName() );
 	}
 
 	/**

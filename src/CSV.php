@@ -145,7 +145,7 @@ class CSV {
 		$heads = $this->remap( $column_map );
 		$pk_col_num = false;
 		foreach ($heads as $head_index => $head_name) {
-			if ( $head_name == $table->get_pk_column()->get_name() ) {
+			if ( $head_name == $table->get_pk_column()->getName() ) {
 				$pk_col_num = $head_index;
 				break;
 			}
@@ -196,7 +196,7 @@ class CSV {
 					$errors[] = array(
 						'column_name' => $this->headers[$col_num],
 						'column_number' => $col_num,
-						'field_name' => $column->get_name(),
+						'field_name' => $column->getName(),
 						'row_number' => $row_num,
 						'messages' => $col_errors,
 					);
@@ -236,7 +236,7 @@ class CSV {
 					} else {
 						$fk_rows = $this->get_fk_rows( $column->get_referenced_table(), $value );
 						$foreign_row = array_shift( $fk_rows );
-						$value = $foreign_row->get_primary_key();
+						$value = $foreign_row->getPrimaryKey();
 					}
 				}
 
@@ -244,7 +244,7 @@ class CSV {
 				$row[$db_column_name] = $value;
 			}
 			
-			$pk_name = $table->get_pk_column()->get_name();
+			$pk_name = $table->get_pk_column()->getName();
 			$pk_value = ( isset( $row[ $pk_name ] ) ) ? $row[ $pk_name ] : null;
 			$table->save_record( $row, $pk_value );
 			$count++;
@@ -268,7 +268,7 @@ class CSV {
 		$foreign_table = $column->get_referenced_table();
 		if ( ! $this->get_fk_rows( $foreign_table, $value ) ) {
 			$link = '<a href="' . $foreign_table->get_url() . '" title="Opens in a new tab or window" target="_blank" >'
-				. $foreign_table->get_title()
+				. $foreign_table->getTitle()
 				. '</a>';
 			return "Value <code>$value</code> not found in $link";
 		}
@@ -285,7 +285,7 @@ class CSV {
 	 */
 	protected function get_fk_rows($foreign_table, $value) {
 		$foreign_table->reset_filters();
-		$foreign_table->add_filter( $foreign_table->get_title_column()->get_name(), '=', $value );
+		$foreign_table->add_filter( $foreign_table->get_title_column()->getName(), '=', $value );
 		return $foreign_table->get_records();
 	}
 
@@ -297,8 +297,8 @@ class CSV {
 	 */
 	protected function value_exists( $table, $column, $value ) {
 		$wpdb = $table->get_database()->get_wpdb();
-		$sql = 'SELECT 1 FROM `' . $table->get_name() . '` '
-			. 'WHERE `' . $column->get_name() . '` = %s '
+		$sql = 'SELECT 1 FROM `' . $table->getName() . '` '
+			. 'WHERE `' . $column->getName() . '` = %s '
 			. 'LIMIT 1';
 		$exists = $wpdb->get_row( $wpdb->prepare( $sql, array( $value ) ) );
 		return ! is_null( $exists );

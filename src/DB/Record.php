@@ -1,6 +1,6 @@
 <?php
 
-namespace WordPress\Tabulate\DB;
+namespace Tabulate\DB;
 
 class Record {
 
@@ -55,9 +55,9 @@ class Record {
 			$col = $this->get_col( $name );
 			if ( $col->is_foreign_key() && ! empty( $this->data->$name ) ) {
 				$referencedTable = $col->get_referenced_table();
-				$fkRecord = $referencedTable->get_record( $this->data->$name );
+				$fkRecord = $referencedTable->getRecord( $this->data->$name );
 				$fkTitleCol = $referencedTable->get_title_column();
-				$fkTitleColName = $fkTitleCol->get_name();
+				$fkTitleColName = $fkTitleCol->getName();
 				if ( $fkTitleCol->is_foreign_key() ) {
 					// Use title if the FK's title column is also an FK.
 					$fkTitleColName .= self::FKTITLE;
@@ -95,7 +95,7 @@ class Record {
 	protected function get_col( $name, $required = true ) {
 		$col = $this->table->get_column( $name );
 		if ( $required && $col === false ) {
-			throw new \Exception( "Unable to get column $name on table " . $this->table->get_name() );
+			throw new \Exception( "Unable to get column $name on table " . $this->table->getName() );
 		}
 		return $col;
 	}
@@ -110,9 +110,9 @@ class Record {
 	 *
 	 * @return string|false
 	 */
-	public function get_primary_key() {
+	public function getPrimaryKey() {
 		if ( $this->table->get_pk_column() ) {
-			$pk_col_name = $this->table->get_pk_column()->get_name();
+			$pk_col_name = $this->table->get_pk_column()->getName();
 			if ( isset( $this->data->$pk_col_name ) ) {
 				return $this->data->$pk_col_name;
 			}
@@ -127,12 +127,12 @@ class Record {
 	public function get_title() {
 		$title_col = $this->table->get_title_column();
 		if ( $title_col !== $this->table->get_pk_column() ) {
-			$title_col_name = $title_col->get_name();
+			$title_col_name = $title_col->getName();
 			return $this->data->$title_col_name;
 		} else {
 			$title_parts = array();
 			foreach ($this->table->get_columns() as $col) {
-				$col_name = $col->get_name().self::FKTITLE;
+				$col_name = $col->getName().self::FKTITLE;
 				$title_parts[] = $this->$col_name();
 			}
 			return '[ ' . join( ' | ', $title_parts ) .' ]';
@@ -152,7 +152,7 @@ class Record {
 		return $this->table
 			->get_column( $column_name )
 			->get_referenced_table()
-			->get_record( $this->data->$column_name );
+			->getRecord( $this->data->$column_name );
 	}
 
 	/**
@@ -165,24 +165,8 @@ class Record {
 	 */
 	public function get_referencing_records( $foreign_table, $foreign_column, $with_pagination = true ) {
 		$foreign_table->reset_filters();
-		$foreign_table->add_filter( $foreign_column, '=', $this->get_primary_key(), true );
+		$foreign_table->add_filter( $foreign_column, '=', $this->getPrimaryKey(), true );
 		return $foreign_table->get_records( $with_pagination );
-	}
-
-	public function get_url( $action = 'index', $include_ident = true, $extra_params = false ) {
-		$params = array(
-			'page' => 'tabulate',
-			'controller' => 'record',
-			'action' => $action,
-			'table' => $this->table->get_name(),
-		);
-		if ( $include_ident && $this->get_primary_key() !== false ) {
-			$params['ident'] = $this->get_primary_key();
-		}
-		if ( is_array( $extra_params ) ) {
-			$params = array_merge( $params, $extra_params );
-		}
-		return admin_url( 'admin.php?' . http_build_query( $params ) );
 	}
 
 	/**
@@ -200,7 +184,7 @@ class Record {
 			. "WHERE table_name = %s AND record_ident = %s"
 			. "ORDER BY date_and_time DESC, cs.id DESC "
 			. "LIMIT 15 ";
-		$params = array( $this->table->get_name(), $this->get_primary_key() );
+		$params = array( $this->table->getName(), $this->getPrimaryKey() );
 		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
 	}
 

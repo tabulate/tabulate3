@@ -40,7 +40,7 @@ class ImportTest extends TestBase {
 		$csv->import_data( $testtypes_table, $column_map );
 		// Make sure 2 records were imported.
 		$this->assertEquals( 2, $testtypes_table->count_records() );
-		$rec1 = $testtypes_table->get_record( 1 );
+		$rec1 = $testtypes_table->getRecord( 1 );
 		$this->assertEquals( 'One', $rec1->title() );
 		// And that 1 changeset was created, with 4 changes.
 		$change_tracker = new \WordPress\Tabulate\DB\ChangeTracker( $this->wpdb );
@@ -70,7 +70,7 @@ class ImportTest extends TestBase {
 		$csv->import_data( $testtable, $column_map );
 		// Make sure there's still only one record, and that it's been updated.
 		$this->assertEquals( 1, $testtable->count_records() );
-		$rec2 = $testtable->get_record( 1 );
+		$rec2 = $testtable->getRecord( 1 );
 		$this->assertEquals( 'One', $rec2->title() );
 		$this->assertEquals( 'A description', $rec2->description() );
 
@@ -84,7 +84,7 @@ class ImportTest extends TestBase {
 		$csv2->import_data( $testtable, $column_map2 );
 		// Make sure there's still only one record, and that it's been updated.
 		$this->assertEquals( 1, $testtable->count_records() );
-		$rec3 = $testtable->get_record( 1 );
+		$rec3 = $testtable->getRecord( 1 );
 		$this->assertEquals( 'One', $rec3->title() );
 		$this->assertEquals( 'New description', $rec3->description() );
 	}

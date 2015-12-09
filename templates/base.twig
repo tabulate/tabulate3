@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {# The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags. #}
+
+        <title>{{title}} :: {{site_title}}</title>
+        <link href="{{baseurl}}/assets/components/bootstrap-default/css/bootstrap.min.css" rel="stylesheet">
+        <link href="{{baseurl}}/assets/components/bootstrap-datepicker/bootstrap-datepicker-built.css" rel="stylesheet">
+        <link href="{{baseurl}}/assets/style.css" rel="stylesheet">
+        {% block head %}
+        {% endblock %}
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <ul class="list-inline text-right">
+                    <li><a href="{{baseurl}}/login">Log in</a></li>
+                </ul>
+            </div>
+            <div class="row">
+
+                <div class="col-md-3">
+                    <h2>{{site_title}}</h2>
+                    <ul class="list-inline">
+                        <li><a href="{{baseurl}}">Home</a></li>
+                        <li><a href="{{baseurl}}/erd" title="Entity-Relationship Diagram">ERD</a></li>
+                        <li><a href="{{baseurl}}/admin" title="Database administration">Admin</a></li>
+                    </ul>
+                    {#<h3>Views:</h3>
+                    <ol>
+                        {% for view in views %}
+                        <li><a href="{{baseurl}}/table/{{view.getName}}">{{view.getTitle}}</a></li>
+                        {% endfor %}
+                    </ol>#}
+                    <h3>Tables:</h3>
+                    <ol>
+                        {% for table in tables %}
+                        <li><a href="{{baseurl}}/table/{{table.getName}}">{{table.getTitle}}</a></li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                <div class="col-md-9">
+                    {% if table %}
+                    <h1>{{table.getTitle}} <small class='about-text'>{{table.get_comment}}</small></h1>
+                    <ul class="list-inline">
+                        <li>
+                            <a href="{{baseurl}}/table/{{table.getName()}}" class="nav-tab {% if controller=='table' %}nav-tab-active{% endif %}">
+                                Search
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{baseurl}}/record/{{table.getName()}}"
+                               class="nav-tab {% if controller=='record' and not record.get_primary_key %}nav-tab-active{% endif %}">
+                                Create
+                            </a>
+                        </li>
+                    {#<a href="{{baseurl}}/record/{{record.getName()}}" class="nav-tab {% if controller=='record' and record.get_primary_key %}nav-tab-active{% endif %}">
+                        Edit
+                    </a>
+                        </li>
+                        <li>
+                    <a href="{{baseurl}}/table/{{table.getName()}}" class="nav-tab {% if action=='import' %}nav-tab-active{% endif %}">
+                        Import
+                    </a>#}
+                        <li>
+                            <a href="{{baseurl}}/erd?tables[]={{table.getName()}}" title="View Entity-Relationship Diagram for this table">
+                                ERD
+                            </a>
+                        </li>
+                        </li>
+                    </ul>
+                    {% endif %}
+
+                                
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+
+    </div>
+
+    <div class="footer">
+        <hr />
+        <ul class="list-inline">
+            <li>
+                <a href="https://tabulate.github.io" class=""
+                   title="Go to the Tabulate website (opens in a new tab)" target="_blank">
+                    This is <strong>Tabulate {{tabulate_version}}</strong>
+                </a>
+            </li>
+            <li>
+                <a href="https://github.com/tabulate/tabulate/issues" class="text-danger"
+                   title="Let the authors of Tabulate know that something is wrong (opens in a new tab)" target="_blank">
+                    Report an issue
+                </a>
+            </li>
+        </ul>
+    </div>
+    <script src="{{baseurl}}/assets/components/jquery/jquery.min.js"></script>
+    <script src="{{baseurl}}/components/bootstrap/js/bootstrap.min.js"></script>
+    <script src="{{baseurl}}/components/bootstrap-datepicker/bootstrap-datepicker-built.js"></script>
+    <script src="{{baseurl}}/app.js"></script>
+    {% block foot %}
+    {% endblock %}
+</body>
+</html>

@@ -72,7 +72,7 @@ class ChangeTracker {
 
 	public function before_save( Table $table, $data, $pk_value ) {
 		// Don't save changes to the changes tables.
-		if ( in_array( $table->get_name(), $this->table_names() ) ) {
+		if ( in_array( $table->getName(), $this->table_names() ) ) {
 			return false;
 		}
 
@@ -80,18 +80,18 @@ class ChangeTracker {
 		$this->open_changeset( $this->current_changeset_comment );
 
 		// Get the current (i.e. soon-to-be-old) data for later use.
-		$this->old_record = $table->get_record( $pk_value );
+		$this->old_record = $table->getRecord( $pk_value );
 	}
 
 	public function after_save( Table $table, Record $new_record ) {
 		// Don't save changes to the changes tables.
-		if ( in_array( $table->get_name(), self::table_names() ) ) {
+		if ( in_array( $table->getName(), self::table_names() ) ) {
 			return false;
 		}
 
 		// Save a change for each changed column.
 		foreach ( $table->get_columns() as $column ) {
-			$col_name = ( $column->is_foreign_key() ) ? $column->get_name().Record::FKTITLE : $column->get_name();
+			$col_name = ( $column->is_foreign_key() ) ? $column->getName().Record::FKTITLE : $column->getName();
 			$old_val = ( is_callable( array( $this->old_record, $col_name ) ) ) ? $this->old_record->$col_name() : null;
 			$new_val = $new_record->$col_name();
 			if ($new_val == $old_val ) {
@@ -101,9 +101,9 @@ class ChangeTracker {
 			$data = array(
 				'changeset_id' => self::$current_changeset_id,
 				'change_type' => 'field',
-				'table_name' => $table->get_name(),
-				'column_name' => $column->get_name(),
-				'record_ident' => $new_record->get_primary_key(),
+				'table_name' => $table->getName(),
+				'column_name' => $column->getName(),
+				'record_ident' => $new_record->getPrimaryKey(),
 			);
 			// Daft workaround for https://core.trac.wordpress.org/ticket/15158
 			if ( ! is_null( $old_val ) ) {

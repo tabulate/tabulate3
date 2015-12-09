@@ -1,0 +1,30 @@
+{%extends "base.twig" %}
+
+{% block content %}
+
+<h2>Entity Relationship Diagram</h2>
+
+{% if selectedTables %}
+<p>Scroll down to specify which tables are displayed. <a href="#display" class="btn btn-default">&darr;</a></p>
+<p><a href="{{pngUrl}}"><img src="{{pngUrl}}" alt="ERD" class="img-responsive" /></a></p>
+{% endif %}
+
+<p><a name="display"></a></p>
+<h2>Change displayed tables</h2>
+<form action="{{baseurl}}/erd" method="get">
+<ol>
+	{% for table in tables %}
+	<li>
+		<input type="checkbox" name="tables[]"
+			   {% if table.getName in selectedTables|keys %}checked{% endif %}
+			   id="{{table.getName}}" value="{{table.getName}}" />
+		<label for="{{table.getName}}">{{table.getTitle}}</label>
+	</li>
+	{% endfor %}
+</ol>
+<p>
+	<input type="submit" value="Show only the selected tables" />
+</p>
+</form
+
+{% endblock %}

@@ -67,13 +67,13 @@ class Menus {
 		global $wp_admin_bar, $wpdb;
 		$db = new DB\Database( $wpdb );
 		foreach ( $db->get_tables() as $table ) {
-			if ( ! DB\Grants::current_user_can( DB\Grants::CREATE, $table->get_name() ) ) {
+			if ( ! DB\Grants::current_user_can( DB\Grants::CREATE, $table->getName() ) ) {
 				continue;
 			}
 			$wp_admin_bar->add_menu( array(
 				'parent' => 'new-content',
-				'id'     => TABULATE_SLUG . '-' . $table->get_name(),
-				'title'  => $table->get_title(),
+				'id'     => TABULATE_SLUG . '-' . $table->getName(),
+				'title'  => $table->getTitle(),
 				'href'   => $table->get_url( 'index', null, 'record' ),
 			) );
 		}

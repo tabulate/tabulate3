@@ -1,6 +1,6 @@
 <?php
 
-namespace WordPress\Tabulate\DB;
+namespace Tabulate\DB;
 
 class Column {
 
@@ -106,7 +106,7 @@ class Column {
 	 *
 	 * @return string The name of this column.
 	 */
-	public function get_name() {
+	public function getName() {
 		return $this->name;
 	}
 
@@ -122,8 +122,8 @@ class Column {
 	/**
 	 * Get the human-readable title of this column.
 	 */
-	public function get_title() {
-		return \WordPress\Tabulate\Text::titlecase( $this->get_name() );
+	public function getTitle() {
+		return \Tabulate\Text::titlecase( $this->getName() );
 	}
 
 	/**

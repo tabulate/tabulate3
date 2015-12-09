@@ -1,5 +1,5 @@
 {% if not records %}
-<p>No records found.</p>
+<p class="alert alert-success">No records found.</p>
 
 {% else %}
 <table class='wp-list-table widefat table tabulate'>
@@ -13,17 +13,17 @@
 				{% if sortable %}
 				<span class="no-break sort-icons">
 
-					{% if table.get_order_by == column.get_name and table.get_order_dir == 'asc' %}
+					{% if table.get_order_by == column.getName and table.get_order_dir == 'asc' %}
 					<span class="dashicons dashicons-arrow-up" title="Sorted ascending"></span>
 					{% else %}
-					<a href="{{table.get_url('index', {order_by:column.get_name, order_dir:'asc'})}}"
+					<a href="{{baseurl}}/table/{{table.getName}}?order_by={{column.getName}}&order_dir=asc"
 					   class="dashicons dashicons-arrow-up" title="Sort ascending"></a>
 					{% endif %}
 
 					{% if table.get_order_by == column.get_name and table.get_order_dir == 'desc'%}
 					<span class="dashicons dashicons-arrow-down" title="Sorted descending"></span>
 					{% else %}
-					<a href="{{table.get_url('index', {order_by:column.get_name, order_dir:'desc'})}}"
+					<a href="{{baseurl}}/table/{{table.getName}}?order_by={{column.getName}}&order_dir=desc"
 					   class="dashicons dashicons-arrow-down" title="Sort descending"></a>
 					{% endif %}
 
@@ -39,7 +39,7 @@
 		<tr>
 			<td>
 				{% if links and table.is_updatable %}
-				<a href="{{ record.get_url('index',true,{return_to:return_to}) }}" class="">Edit</a>
+				<a href="{{baseurl}}/table/{{table.getName}}?return_to:{{return_to}}">Edit</a>
 				{% endif %}
 			</td>
 			{% for column in table.get_columns %}

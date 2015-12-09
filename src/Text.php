@@ -1,6 +1,6 @@
 <?php
 
-namespace WordPress\Tabulate;
+namespace Tabulate;
 
 class Text {
 

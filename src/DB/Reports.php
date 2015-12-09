@@ -33,7 +33,7 @@ class Reports {
 	public function get_template( $report_id ) {
 		// Find the report.
 		$reports = $this->db->get_table( self::reports_table_name() );
-		$report = $reports->get_record( $report_id );
+		$report = $reports->getRecord( $report_id );
 		if ( ! $report) {
 			throw new \Exception("Report $report_id not found.");
 		}

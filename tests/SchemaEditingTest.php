@@ -17,8 +17,8 @@ class SchemaEditingTest extends TestBase {
 		$test_table = $this->db->get_table( 'test_table' );
 		$test_table->rename( 'testing_table' );
 		$testing_table = $this->db->get_table( 'testing_table' );
-		$this->assertEquals( 'testing_table', $testing_table->get_name() );
-		$this->assertEquals( 'testing_table', $test_table->get_name() );
+		$this->assertEquals( 'testing_table', $testing_table->getName() );
+		$this->assertEquals( 'testing_table', $test_table->getName() );
 		$this->assertFalse( $this->db->get_table( 'test_table' ) );
 	}
 
@@ -36,7 +36,7 @@ class SchemaEditingTest extends TestBase {
 		// Rename the table, and make sure the history is the same size.
 		$test_table->rename( 'testing_table' );
 		$testing_table = $this->db->get_table( 'testing_table' );
-		$rec2 = $testing_table->get_record( 1 );
+		$rec2 = $testing_table->getRecord( 1 );
 		$this->assertCount( 4, $rec2->get_changes() );
 	}
 

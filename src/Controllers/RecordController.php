@@ -1,8 +1,8 @@
 <?php
 
-namespace WordPress\Tabulate\Controllers;
+namespace Tabulate\Controllers;
 
-use WordPress\Tabulate\DB\Grants;
+use Tabulate\DB\Grants;
 
 class RecordController extends ControllerBase {
 
@@ -10,7 +10,7 @@ class RecordController extends ControllerBase {
 	 * @return \WordPress\Tabulate\Template
 	 */
 	private function get_template( $table ) {
-		$template = new \WordPress\Tabulate\Template( 'record/admin.html' );
+		$template = new \Tabulate\Template( 'record/admin.html' );
 		$template->table = $table;
 		$template->controller = 'record';
 		return $template;
@@ -18,22 +18,22 @@ class RecordController extends ControllerBase {
 
 	public function index( $args ) {
 		// Get database and table.
-		$db = new \WordPress\Tabulate\DB\Database( $this->wpdb );
+		$db = new \Tabulate\DB\Database();
 		$table = $db->get_table( $args[ 'table' ] );
 
 		// Give it all to the template.
 		$template = $this->get_template( $table );
 		if ( isset( $args[ 'ident' ] ) ) {
-			$template->record = $table->get_record( $args[ 'ident' ] );
+			$template->record = $table->getRecord( $args[ 'ident' ] );
 			// Check permission.
-			if ( ! Grants::current_user_can( Grants::UPDATE, $table->get_name() ) ) {
+			if ( ! Grants::current_user_can( Grants::UPDATE, $table->getName() ) ) {
 				$template->add_notice( 'error', 'You do not have permission to update data in this table.' );
 			}
 		}
 		if ( ! isset( $template->record ) || $template->record === false ) {
 			$template->record = $table->get_default_record();
 			// Check permission.
-			if ( ! Grants::current_user_can( Grants::CREATE, $table->get_name() ) ) {
+			if ( ! Grants::current_user_can( Grants::CREATE, $table->getName() ) ) {
 				$template->add_notice( 'error', 'You do not have permission to create records in this table.' );
 			}
 			// Add query-string values.
@@ -45,9 +45,6 @@ class RecordController extends ControllerBase {
 		if ( ! $table->is_updatable() ) {
 			$template->add_notice( 'error', "This table can not be updated." );
 		}
-
-		// Enable postboxes (for the history and related tables' boxen).
-		wp_enqueue_script( 'dashboard' );
 
 		// Return to URL.
 		if ( isset( $args['return_to'] ) ) {
@@ -77,9 +74,9 @@ class RecordController extends ControllerBase {
 		$template = $this->get_template( $table );
 
 		// Make sure we're not saving over an already-existing record.
-		$pk_name = $table->get_pk_column()->get_name();
+		$pk_name = $table->get_pk_column()->getName();
 		$pk = $_POST[ $pk_name ];
-		$existing = $table->get_record( $pk );
+		$existing = $table->getRecord( $pk );
 		if ( ! $record_ident && $existing ) {
 			$template->add_notice( 'updated', "The record identified by '$pk' already exists." );
 			$_REQUEST['return_to'] = $existing->get_url();
@@ -115,7 +112,7 @@ class RecordController extends ControllerBase {
 		if ( ! isset( $_POST['confirm_deletion'] ) ) {
 			$template = new \WordPress\Tabulate\Template( 'record/delete.html' );
 			$template->table = $table;
-			$template->record = $table->get_record( $record_ident );
+			$template->record = $table->getRecord( $record_ident );
 			return $template->render();
 		}
 
@@ -126,7 +123,7 @@ class RecordController extends ControllerBase {
 			$this->wpdb->query( 'COMMIT' );
 		} catch ( \Exception $e ) {
 			$template = $this->get_template( $table );
-			$template->record = $table->get_record( $record_ident );
+			$template->record = $table->getRecord( $record_ident );
 			$template->add_notice( 'error', $e->getMessage() );
 			return $template->render();
 		}

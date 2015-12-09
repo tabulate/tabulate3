@@ -1,12 +1,8 @@
-{% extends "base.html" %}
+{% extends "base.twig" %}
 
 {% block content %}
 
-<form action="{{table.get_url}}" method="get" class="tabulate-filters about-description">
-	<input type="hidden" name="page" value="tabulate" />
-	<input type="hidden" name="controller" value="table" />
-	<input type="hidden" name="action" value="index" />
-	<input type="hidden" name="table" value="{{table.get_name}}" />
+<form action="{{baseurl}}/table/{{table.getName}}" method="get" class="tabulate-filters about-description">
 	<table>
 
 		{% for fid,filter in filters %}
@@ -17,16 +13,16 @@
 				</label>
 			</td>
 			<td>
-				<select name="filter[{{fid}}][column]">
+				<select name="filter[{{fid}}][column]" class="form-control">
 					{% for column in table.get_columns %}
-					<option value="{{column.get_name}}" {% if column.get_name==filter.column %}selected{% endif %}>
-						{{column.get_title}}
+					<option value="{{column.getName}}" {% if column.getName==filter.column %}selected{% endif %}>
+						{{column.getTitle}}
 					</option>
 					{% endfor %}
 				</select>
 			</td>
 			<td>
-				<select name="filter[{{fid}}][operator]">
+				<select name="filter[{{fid}}][operator]" class="form-control">
 					{% for op,name in operators %}
 					<option value="{{op}}" {% if op==filter.operator %}selected{% endif %}>
 						{{name}}
@@ -36,9 +32,9 @@
 			</td>
 			<td>
 				{% if filter.operator == 'in' or filter.operator == 'not in' %}
-				<textarea name="filter[{{fid}}][value]">{{filter.value}}</textarea>
+				<textarea name="filter[{{fid}}][value]" class="form-control">{{filter.value}}</textarea>
 				{% else %}
-				<input type="text" name="filter[{{fid}}][value]" value="{{filter.value}}" />
+				<input type="text" name="filter[{{fid}}][value]" value="{{filter.value}}" class="form-control" />
 				{% endif %}
 			</td>
 		</tr>
@@ -48,9 +44,9 @@
 			<td colspan="3">
 			</td>
 			<td class="buttons">
-				<button class="button" data-controller="table" data-action="index">Search</button>
+				<button class="btn btn-info" data-controller="table" data-action="index">Search</button>
 				{% if filter_count > 1 %}
-				<a href="{{table.get_url}}" class="button">Clear filters</a>
+				<a href="{{baseurl}}/table/{{table.getName}}" class="btn btn-default">Clear filters</a>
 				{% endif %}
 			</td>
 		</tr>
@@ -120,6 +116,6 @@
 
 </form>
 
-{% include 'data_table.html' with { links:true } %}
+{% include 'data_table.twig' with { links:true } %}
 
 {%endblock%}

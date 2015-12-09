@@ -1,0 +1,10 @@
+{%extends "base.twig" %}
+
+{% block content %}
+
+    <form action="{{baseurl}}/upgrade" method="post">
+        <label>To install or upgrade the application, click here:</label>
+        <input type="submit" class="btn btn-info" value="Upgrade" />
+    </form>
+
+{% endblock %}

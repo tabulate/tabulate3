@@ -45,13 +45,13 @@ class SchemaTest extends TestBase {
 		$test_table = $this->db->get_table( 'test_table' );
 		$referenced_tables = $test_table->get_referenced_tables( true );
 		$referenced_table = array_pop( $referenced_tables );
-		$this->assertEquals( 'test_types', $referenced_table->get_name() );
+		$this->assertEquals( 'test_types', $referenced_table->getName() );
 
 		// And the other way around.
 		$type_table = $this->db->get_table( 'test_types' );
 		$referencing_tables = $type_table->get_referencing_tables();
 		$referencing_table = array_pop( $referencing_tables );
-		$this->assertEquals( 'test_table', $referencing_table[ 'table' ]->get_name() );
+		$this->assertEquals( 'test_table', $referencing_table[ 'table' ]->getName() );
 	}
 
 	/**
@@ -207,9 +207,9 @@ class SchemaTest extends TestBase {
 		);
 		$db = new WordPress\Tabulate\DB\Database( $this->wpdb );
 		$tbl = $db->get_table( 'test_varchar_pk' );
-		$this->assertEquals( 'ident', $tbl->get_pk_column()->get_name() );
+		$this->assertEquals( 'ident', $tbl->get_pk_column()->getName() );
 		$rec = $tbl->save_record( array( 'ident' => 'TEST123' ) );
-		$this->assertEquals( 'TEST123', $rec->get_primary_key() );
+		$this->assertEquals( 'TEST123', $rec->getPrimaryKey() );
 	}
 
 	/**
@@ -296,6 +296,6 @@ class SchemaTest extends TestBase {
 		$db = new WordPress\Tabulate\DB\Database( $this->wpdb );
 		$tbl = $db->get_table( 'provided_pk' );
 		$rec = $tbl->save_record( array( 'code' => 'TEST') );
-		$this->assertEquals( 'TEST', $rec->get_primary_key() );
+		$this->assertEquals( 'TEST', $rec->getPrimaryKey() );
 	}
 }
