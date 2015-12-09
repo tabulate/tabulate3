@@ -19,6 +19,8 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/', 'HomeController::index');
     $r->addRoute('GET', '/upgrade', 'UpgradeController::prompt');
     $r->addRoute('POST', '/upgrade', 'UpgradeController::run');
+    $r->addRoute('GET', '/login', 'UserController::loginForm');
+    $r->addRoute('POST', '/login', 'UserController::login');
 
     $r->addRoute('GET', '/erd', 'ErdController::index');
     $r->addRoute('GET', '/erd.png', 'ErdController::render');

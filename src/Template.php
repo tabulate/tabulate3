@@ -110,11 +110,11 @@ class Template {
     }
 
     /**
-     * Render the template and output it.
+     * Render the template and return it.
      * @return void
      */
     public function __toString() {
-        echo $this->render();
+        return $this->render();
     }
 
     /**
