@@ -1,0 +1,32 @@
+{%extends "base.twig"%}
+
+{% block content %}
+
+    <form method="post" action="{{baseurl}}/record/{{table.getName}}{% if record.getPrimaryKey %}/{{record.getPrimaryKey()}}{% endif %}" class="form-inline">
+        <p>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" value="{{record.name()}}" class="form-control" />
+        </p>
+        {% if record.getPrimaryKey() %}
+            <p>
+                Describe the changes you've made:
+                <input type="text" name="changeset_comment" class="form-control" />
+            </p>
+        {% endif %}
+        <p>
+
+            <input type="submit" value="Save" class="btn btn-info" />
+            {% if return_to %}
+                <input type="hidden" name="return_to" value="{{return_to}}" />
+                <a href="{{return_to}}" class="btn btn-default">Cancel</a>
+            {% endif %}
+
+            {% if record.getPrimaryKey() %}
+                <a href="{{baseurl}}/record/{{record.getPrimaryKey()}}/delete" class="btn btn-default" title="Delete this record">
+                    Delete
+                </a>
+            {% endif %}
+        </p>
+    </form>
+
+{% endblock %}

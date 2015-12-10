@@ -19,7 +19,7 @@ class MapController extends ControllerBase
         $this->table = $db->get_table($args['table']);
 
         // Check that a point column exists.
-        $points = $this->table->get_columns('point');
+        $points = $this->table->getColumns('point');
         if (empty($points)) {
             // @TODO Show error.
             return;
@@ -55,7 +55,7 @@ class MapController extends ControllerBase
             $node->addAttribute('lat', $geom->getY());
             $node->addAttribute('lon', $geom->getX());
             $node->addAttribute('visible', 'true'); // Required attribute.
-            foreach ($this->table->get_columns() as $col) {
+            foreach ($this->table->getColumns() as $col) {
                 if ($col->getName() == $this->point_col_name) {
                     // Don't include the geometry column.
                     // @todo Exclude other spatial columns?
@@ -113,7 +113,7 @@ class MapController extends ControllerBase
             $extensions = $wpt->addChild('extensions');
             $waypoint_extension = $extensions->addChild('gpxx:WaypointExtension', '', 'gpxx');
             $categories = $waypoint_extension->addChild('gpxx:Categories', '', 'gpxx');
-            foreach ($this->table->get_columns() as $col) {
+            foreach ($this->table->getColumns() as $col) {
                 if ($col->getName() == $this->point_col_name) {
                     // Don't include the geometry column.
                     continue;

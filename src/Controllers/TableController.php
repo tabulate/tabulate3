@@ -60,9 +60,9 @@ class TableController extends ControllerBase
         $template = new \Tabulate\Template('table.twig');
         $template->controller = 'table';
         $template->table = $table;
-        $template->tables = $table->get_database()->get_tables();
+        $template->tables = $table->getDatabase()->get_tables();
         $template->title = $table->getTitle();
-        $template->columns = $table->get_columns();
+        $template->columns = $table->getColumns();
         $template->operators = $table->get_operators();
         $template->filters = $filters;
         $template->filter_count = count($filters);
@@ -77,7 +77,7 @@ class TableController extends ControllerBase
      * This action is for importing a single CSV file into a single database table.
      * It guides the user through the four stages of importing:
      * uploading, field matching, previewing, and doing the actual import.
-     * All of the actual work is done in [WebDB_File_CSV].
+     * All of the actual work is done in the CSV class.
      *
      * 1. In the first stage, a CSV file is **uploaded**, validated, and moved to a temporary directory.
      *    The file is then accessed from this location in the subsequent stages of importing,
@@ -93,7 +93,7 @@ class TableController extends ControllerBase
      *    If a column is not present in the import the database will (obviously) use the default value if there is one;
      *    this will be shown in the preview.
      * 4. When the user accepts the preview, the actual **import** of data is carried out.
-     *    Rows are saved to the database using the usual [WebDB_DBMS_Table::save()](api/Webdb_DBMS_Table#save_row),
+     *    Rows are saved to the database using the usual `Table::save()` method
      *    and a message presented to the user to indicate successful completion.
      *
      * @return void
@@ -151,7 +151,7 @@ class TableController extends ControllerBase
             $template->columns = serialize($_POST['columns']);
             $errors = array();
             // Make sure all required columns are selected
-            foreach ($table->get_columns() as $col) {
+            foreach ($table->getColumns() as $col) {
                 // Handle missing columns separately; other column errors are
                 // done in the CSV class. Missing columns don't matter if importing
                 // existing records.
@@ -202,7 +202,7 @@ class TableController extends ControllerBase
         $month = $factory->getMonth(new \DateTime($yearNum . '-' . $monthNum . '-01'));
         $template->month = $month;
         $records = array();
-        foreach ($table->get_columns('date') as $dateCol) {
+        foreach ($table->getColumns('date') as $dateCol) {
             $dateColName = $dateCol->getName();
             // Filter to the just the requested month.
             $table->add_filter($dateColName, '>=', $month->getBegin()->format('Y-m-d'));

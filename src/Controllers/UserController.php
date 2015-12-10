@@ -9,6 +9,13 @@ class UserController extends \Tabulate\Controllers\ControllerBase
     {
         $template = new \Tabulate\Template('login.twig');
         $template->title = 'Log in';
-        echo $template;
+        echo $template->render();
+    }
+
+    public function registerForm()
+    {
+        $template = new \Tabulate\Template('register.twig');
+        $template->title = 'Register';
+        echo $template->render();
     }
 }

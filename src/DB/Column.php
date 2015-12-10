@@ -260,7 +260,7 @@ class Column {
 	 * @return Table The referenced table.
 	 */
 	public function get_referenced_table() {
-		return $this->table->get_database()->get_table( $this->references );
+		return $this->table->getDatabase()->get_table( $this->references );
 	}
 
 	/**

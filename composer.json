@@ -20,7 +20,8 @@
         "components/jquery": "2.*",
         "components/bootstrap-default": "*",
         "eternicode/bootstrap-datepicker": "1.*",
-        "eloquent/asplode": "^2.0"
+        "eloquent/asplode": "^2.0",
+        "hybridauth/hybridauth": "^2.0"
     },
     "config": {
         "component-dir": "assets/components"

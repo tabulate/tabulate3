@@ -1,6 +1,6 @@
 <?php
 
-namespace WordPress\Tabulate;
+namespace Tabulate;
 
 /**
  * A class for parsing a CSV file has either just been uploaded (i.e. $_FILES is
@@ -215,7 +215,7 @@ class CSV {
 	 */
 	public function import_data($table, $column_map) {
 		global $wpdb;
-		$change_tracker = new \WordPress\Tabulate\DB\ChangeTracker( $wpdb );
+		$change_tracker = new \Tabulate\DB\ChangeTracker( $wpdb );
 		$change_tracker->open_changeset( 'CSV import.', true );
 		$count = 0;
 		$headers = $this->remap( $column_map );
@@ -257,7 +257,7 @@ class CSV {
 	 * Determine whether a given value is valid for a foreign key (i.e. is the
 	 * title of a foreign row).
 	 * 
-	 * @param Webdb_DBMS_Column $column
+	 * @param \Tabulate\DB\Column $column
 	 * @param integer $col_num
 	 * @param integer $row_num
 	 * @param string $value
@@ -296,7 +296,7 @@ class CSV {
 	 * @param mixed $value
 	 */
 	protected function value_exists( $table, $column, $value ) {
-		$wpdb = $table->get_database()->get_wpdb();
+		$wpdb = $table->getDatabase()->get_wpdb();
 		$sql = 'SELECT 1 FROM `' . $table->getName() . '` '
 			. 'WHERE `' . $column->getName() . '` = %s '
 			. 'LIMIT 1';

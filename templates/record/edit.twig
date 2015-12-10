@@ -5,7 +5,7 @@
 <form method="post" action="{{baseurl}}/record/{{table.getName}}" class="tabulate-record">
 	<table>
 
-		{% for column in table.get_columns %}
+		{% for column in table.getColumns %}
 		<tr>
 			<th class="column-title">
 				<label for="{{column.getName}}" class="right inline">{{column.getTitle}}
@@ -33,7 +33,7 @@
 					</a>
 					of
 					{% endif %}
-					<a href="{{column.get_referenced_table.get_url}}">{{column.get_referenced_table.get_title}}</a>.
+					<a href="{{baseurl}}/table/{{column.get_referenced_table.getName}}">{{column.get_referenced_table.getTitle}}</a>.
 					{% endif %}
 
 					{% if column.is_auto_increment %}A value for this field will be assigned automatically.{% endif %}
@@ -129,8 +129,8 @@
 					<tr>
 						<td>
 							<a href="admin.php?page=tabulate&controller=table&action=index&table={{wpdb_prefix}}tabulate_changesets&filter[0][column]=date_and_time&filter[0][operator]=%3D&filter[0][value]={{change.date_and_time}}">
-							{{change.date_and_time|get_date_from_gmt|wp_date_format}}
-							{{change.date_and_time|get_date_from_gmt|wp_time_format}}
+							{{change.date_and_time}}
+							{{change.date_and_time}}
 							</a>
 						</td>
 						<td>{{change.column_name|titlecase}}</td>

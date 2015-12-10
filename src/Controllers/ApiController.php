@@ -1,9 +1,10 @@
 <?php
 
-namespace WordPress\Tabulate\Controllers;
+namespace Tabulate\Controllers;
 
-use WordPress\Tabulate\DB\Database;
-use WordPress\Tabulate\DB\Grants;
+use Tabulate\DB\Table;
+use Tabulate\DB\Database;
+use Tabulate\DB\Grants;
 
 /**
  * This controller is different from the others in that it is not called via the
@@ -84,7 +85,7 @@ class ApiController extends ControllerBase
         }
         $db = new Database($this->wpdb);
         $table = $db->get_table($request->get_param('table_name'));
-        if (!$table instanceof \WordPress\Tabulate\DB\Table) {
+        if (!$table instanceof Table) {
             return array();
         }
         // First get any exact matches.
@@ -96,7 +97,7 @@ class ApiController extends ControllerBase
 
     /**
      * Get a set of results for Foreign Key lookups.
-     * @param \WordPress\Tabulate\DB\Table $table    The table to search.
+     * @param \Tabulate\DB\Table $table    The table to search.
      * @param string                       $operator One of the permitted filter operators.
      * @param string                       $term     The search term.
      * @return string[]

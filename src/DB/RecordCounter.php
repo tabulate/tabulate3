@@ -61,9 +61,9 @@ class RecordCounter {
         $sql = 'SELECT COUNT(' . $count_col . ') as `count` FROM `' . $this->table->getName() . '`';
         $params = $this->table->apply_filters($sql);
         if (!empty($params)) {
-            $sql = $this->table->get_database()->query($sql, $params);
+            $sql = $this->table->getDatabase()->query($sql, $params);
         }
-        $count = $this->table->get_database()->query($sql)->fetchColumn();
+        $count = $this->table->getDatabase()->query($sql)->fetchColumn();
         if ($can_cache) {
             $_SESSION[$this->transient_name()] = $count;
         }
@@ -84,7 +84,7 @@ class RecordCounter {
      * @return string
      */
     public function transient_name() {
-        return TABULATE_SLUG . '_' . $this->table->getName() . '_count';
+        return $this->table->getName() . '_count';
     }
 
 }

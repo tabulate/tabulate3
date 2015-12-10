@@ -2,12 +2,19 @@
 
 namespace Tabulate\Controllers;
 
+use Tabulate\DB\Database;
+use Tabulate\DB\User;
+
 abstract class ControllerBase
 {
 
+    /** @var \Tabulate\DB\User */
+    protected $user;
+
     public function __construct()
     {
-        
+        $this->db = new Database();
+        $this->user = new User($this->db);
     }
 
     protected function redirect($route)
@@ -18,12 +25,12 @@ abstract class ControllerBase
         exit(1);
     }
 
-    protected function send_file($ext, $mime, $content, $download_name = false)
+    protected function sendFile($ext, $mime, $content, $downloadName = false)
     {
-        $download_name = ($download_name ? : date('Y-m-d') ) . '.' . $ext;
+        $downloadName = ($downloadName ? : date('Y-m-d') ) . '.' . $ext;
         header('Content-Encoding: UTF-8');
         header('Content-type: ' . $mime . '; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="' . $download_name . '"');
+        header('Content-Disposition: attachment; filename="' . $downloadName . '"');
         echo $content;
         exit;
     }

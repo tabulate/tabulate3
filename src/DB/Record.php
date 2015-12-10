@@ -131,7 +131,7 @@ class Record {
 			return $this->data->$title_col_name;
 		} else {
 			$title_parts = array();
-			foreach ($this->table->get_columns() as $col) {
+			foreach ($this->table->getColumns() as $col) {
 				$col_name = $col->getName().self::FKTITLE;
 				$title_parts[] = $this->$col_name();
 			}
@@ -174,7 +174,7 @@ class Record {
 	 * @return array|string
 	 */
 	public function get_changes() {
-		$wpdb = $this->table->get_database()->get_wpdb();
+		$wpdb = $this->table->getDatabase()->get_wpdb();
 		$sql = "SELECT cs.id AS changeset_id, c.id AS change_id, date_and_time, "
 			. "user_nicename, table_name, record_ident, column_name, old_value, "
 			. "new_value, comment "

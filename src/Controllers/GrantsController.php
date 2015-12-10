@@ -1,6 +1,6 @@
 <?php
 
-namespace WordPress\Tabulate\Controllers;
+namespace Tabulate\Controllers;
 
 class GrantsController extends ControllerBase
 {
@@ -14,15 +14,15 @@ class GrantsController extends ControllerBase
     public function __construct($wpdb)
     {
         parent::__construct($wpdb);
-        $db = new \WordPress\Tabulate\DB\Database($this->wpdb);
+        $db = new \Tabulate\DB\Database($this->wpdb);
         $this->table_names = $db->get_table_names();
-        $this->template = new \WordPress\Tabulate\Template('grants.html');
+        $this->template = new \Tabulate\Template('grants.html');
     }
 
     public function index()
     {
         $this->template->tables = $this->table_names;
-        $grants = new \WordPress\Tabulate\DB\Grants();
+        $grants = new \Tabulate\DB\Grants();
         $this->template->roles = $grants->get_roles();
         $this->template->grants = $grants->get();
         $this->template->capabilities = $grants->get_capabilities();
@@ -32,7 +32,7 @@ class GrantsController extends ControllerBase
 
     public function save()
     {
-        $grants = new \WordPress\Tabulate\DB\Grants();
+        $grants = new \Tabulate\DB\Grants();
 
         // Validate the POSTed grants.
         $new_grants = array();

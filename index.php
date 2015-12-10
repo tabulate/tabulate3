@@ -1,8 +1,6 @@
 <?php
 
 define('TABULATE_VERSION', '3.0.0');
-define('TABULATE_SLUG', 'tabulate');
-define('DEBUG', true);
 
 // Make sure Composer has been set up (for installation from Git, mostly).
 if (!file_exists(__DIR__ . '/vendor/autoload.php')) {
@@ -15,19 +13,25 @@ require __DIR__ . '/vendor/autoload.php';
 
 session_start();
 
+
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/', 'HomeController::index');
     $r->addRoute('GET', '/upgrade', 'UpgradeController::prompt');
     $r->addRoute('POST', '/upgrade', 'UpgradeController::run');
     $r->addRoute('GET', '/login', 'UserController::loginForm');
     $r->addRoute('POST', '/login', 'UserController::login');
+    $r->addRoute('GET', '/register', 'UserController::registerForm');
+    $r->addRoute('POST', '/register', 'UserController::register');
 
     $r->addRoute('GET', '/erd', 'ErdController::index');
     $r->addRoute('GET', '/erd.png', 'ErdController::render');
 
     $r->addRoute('GET', '/table/{table:[a-z0-9_-]*}[.{format}]', 'TableController::index');
+
     $r->addRoute('GET', '/record/{table:[a-z0-9_-]*}', 'RecordController::index');
     $r->addRoute('GET', '/record/{table:[a-z0-9_-]*}/{id:[0-9].*}[.{format}]', 'RecordController::index');
+    $r->addRoute('POST', '/record/{table:[a-z0-9_-]*}', 'RecordController::save');
+    $r->addRoute('POST', '/record/{table:[a-z0-9_-]*}/{id:[0-9].*}[.{format}]', 'RecordController::save');
 });
 
 // Fetch method and URI from somewhere

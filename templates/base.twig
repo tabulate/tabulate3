@@ -43,6 +43,15 @@
                     </ol>
                 </div>
                 <div class="col-md-9">
+
+                    {% for notice in notices %}
+                    <div class="{{notice.type}} notice alert
+                         alert-{% if notice.type=='error' %}danger{% else %}success{% endif %}
+                         " role="alert">
+                        <p>{{notice.message}}</p>
+                    </div>
+                    {% endfor %}
+
                     {% if table %}
                     <h1>{{table.getTitle}} <small class='about-text'>{{table.get_comment}}</small></h1>
                     <ul class="list-inline">
@@ -74,15 +83,13 @@
                     </ul>
                     {% endif %}
 
-                                
                     {% block content %}{% endblock %}
                 </div>
             </div>
 
     </div>
 
-    <div class="footer">
-        <hr />
+    <footer>
         <ul class="list-inline">
             <li>
                 <a href="https://tabulate.github.io" class=""
@@ -97,7 +104,14 @@
                 </a>
             </li>
         </ul>
-    </div>
+        {% if debug %}
+            <ol class="queries">
+                {%for query in queries %}
+                <li><code>{{query}}</code></li>
+                {% endfor %}
+            </ol>
+        {% endif %}
+    </footer>
     <script src="{{baseurl}}/assets/components/jquery/jquery.min.js"></script>
     <script src="{{baseurl}}/components/bootstrap/js/bootstrap.min.js"></script>
     <script src="{{baseurl}}/components/bootstrap-datepicker/bootstrap-datepicker-built.js"></script>
