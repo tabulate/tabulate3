@@ -2,23 +2,23 @@
 
 {% block content %}
 
-<form method="post" action="{{record.get_url('save')}}" class="tabulate-record">
+<form method="post" action="{{baseurl}}/record/{{table.getName}}" class="tabulate-record">
 	<table>
 
 		{% for column in table.get_columns %}
 		<tr>
 			<th class="column-title">
-				<label for="{{column.get_name}}" class="right inline">{{column.get_title}}
+				<label for="{{column.getName}}" class="right inline">{{column.getTitle}}
 				{% if column.is_required and not column.is_auto_increment %}*{% endif %}
 				</label>
 			</th>
 
 			<td class='form-field form-required'><!-- Data entry cell -->
-				{% include 'field/edit.html' %}
+				{% include 'field/edit.twig' %}
 			</td><!-- End data entry cell -->
 
 			<td>
-				<label id="{{column.get_name}}-help" class="inline" for="{{column.name}}">
+				<label id="{{column.getName}}-help" class="inline" for="{{column.name}}">
 					<em>{{column.get_comment}}</em>
 
 					{% if column.is_unique %}
@@ -27,9 +27,9 @@
 
 					{% if column.is_foreign_key %}
 					This field is a cross reference to
-					{% if attribute(record, column.get_name) %}
-					<a href="{{ record.get_referenced_record(column.get_name).get_url }}">
-						Record <em>{{attribute(record, column.get_name)}}</em>
+					{% if attribute(record, column.getName) %}
+					<a href="{{ record.get_referenced_record(column.getName).get_url }}">
+						Record <em>{{attribute(record, column.getName)}}</em>
 					</a>
 					of
 					{% endif %}
@@ -64,8 +64,8 @@
 					<a href="{{return_to}}" class="button">Cancel</a>
 					{% endif %}
 
-					{% if record.get_primary_key() %}
-					<input type="hidden" name="primary_key_value" value="{{record.get_primary_key()}}" />
+					{% if record.getPrimaryKey() %}
+					<input type="hidden" name="primary_key_value" value="{{record.getPrimaryKey()}}" />
 					<a href="{{record.get_url('delete')}}" class="button" title="Delete this record">Delete</a>
 					{% endif %}
 				</p>
@@ -74,14 +74,14 @@
 	</table>
 </form>
 
-{% if record.get_primary_key %}
+{% if record.getPrimaryKey %}
 <div class="metabox-holder columns-1"><div class="postbox-container record-meta">
 
 	{% for refinfo in table.get_referencing_tables %}
 	<div class="postbox related-records">
-		{% set return_to = record.get_url()~'#related-'~refinfo.table.get_name() %}
+		{% set return_to = record.get_url()~'#related-'~refinfo.table.getName() %}
 		<div class="handlediv" title="Click to toggle"><br /></div>
-		<h3 class="hndle" id="related-{{refinfo.table.get_name()}}">
+		<h3 class="hndle" id="related-{{refinfo.table.getName()}}">
 			<span>
 				{{refinfo.table.get_title}} &mdash; related records
 				(as <em>{{refinfo.column|titlecase}}</em>)
@@ -94,7 +94,7 @@
 					CSV of all
 				</a>
 				{% set defaults_key = 'defaults['~refinfo.column~']' %}
-				<a href="{{refinfo.table.get_url('index', {(defaults_key):record.get_primary_key(), ident:'', return_to:return_to}, 'record')}}"
+				<a href="{{refinfo.table.get_url('index', {(defaults_key):record.getPrimaryKey(), ident:'', return_to:return_to}, 'record')}}"
 				   class="button button-small">
 					Add record
 				</a>

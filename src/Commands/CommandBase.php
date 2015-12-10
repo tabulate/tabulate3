@@ -7,7 +7,7 @@ abstract class CommandBase {
     /** @var string[] CLI arguments. */
     protected $args;
 
-    public function __construct($args) {
+    public function __construct($args = []) {
         $this->args = $args;
     }
 

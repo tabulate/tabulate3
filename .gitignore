@@ -1,6 +1,7 @@
 /vendor
 /.svn
 /testdox.html
+/tests/config.php
 /assets/components
 /nbproject/private/
 /config.php

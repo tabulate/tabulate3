@@ -1,17 +1,17 @@
 {% set fk_threshold = table.get_records_per_page %}
 
 {% if column.is_foreign_key and column.get_referenced_table.count_records <= fk_threshold %}
-<select name="{{column.get_name}}" id="{{column.get_name}}" aria-describedby="{{column.get_name}}-help"
+<select name="{{column.getName}}" id="{{column.getName}}" aria-describedby="{{column.getName}}-help"
 	{% if column.is_required %}required{% endif %} class="form-control"
 	>
 	{% if column.nullable %}<option></option>{% endif %}
 	{% for row in column.get_referenced_table.get_records %}
-	<option value="{{ attribute(row, column.get_referenced_table.get_pk_column.get_name) }}"
-		{% if attribute(record, column.get_name) == attribute(row, column.get_referenced_table.get_pk_column.get_name) %}
+	<option value="{{ attribute(row, column.get_referenced_table.get_pk_column.getName) }}"
+		{% if attribute(record, column.getName) == attribute(row, column.get_referenced_table.get_pk_column.getName) %}
 		selected
 		{% endif %}
 		>
-		{{ attribute(row, column.get_referenced_table.get_title_column.get_name) }}
+		{{ attribute(row, column.get_referenced_table.get_title_column.getName) }}
 	</option>
 	{% endfor %}
 </select><!-- End foreign key select -->
@@ -20,24 +20,24 @@
 
 {% elseif column.is_foreign_key and column.get_referenced_table.count_records > fk_threshold %}
 <div class="foreign-key input-group">
-	<input type="hidden" class="actual-value" name="{{column.get_name}}"
-		   value="{{ attribute(record, column.get_name) }}" />
-	<span class="input-group-addon">{{ attribute(record, column.get_name) }}</span>
+	<input type="hidden" class="actual-value" name="{{column.getName}}"
+		   value="{{ attribute(record, column.getName) }}" />
+	<span class="input-group-addon">{{ attribute(record, column.getName) }}</span>
 	<input type="text" class="form-control" {% if column.is_required %}required{% endif %}
-		   data-fk-table="{{column.get_referenced_table.get_name}}"
-		   value="{{ record.get_referenced_record(column.get_name).get_title }}"
+		   data-fk-table="{{column.get_referenced_table.getName}}"
+		   value="{{ record.get_referenced_record(column.getName).get_title }}"
 	/>
 </div>
 
 
 
 {% elseif column.get_type=='enum' %}
-<select name="{{column.get_name}}" id="{{column.get_name}}" aria-describedby="{{column.get_name}}-help"
+<select name="{{column.getName}}" id="{{column.getName}}" aria-describedby="{{column.getName}}-help"
 	{% if column.is_required %}required{% endif %}
 	class="form-control">
 	{% if column.nullable %}<option></option>{% endif %}
 	{% for option in column.get_options %}
-	<option value="{{option}}" {% if attribute(record, column.get_name) == option %}selected{% endif %}>
+	<option value="{{option}}" {% if attribute(record, column.getName) == option %}selected{% endif %}>
 		{{option}}
 	</option>
 	{% endfor %}
@@ -46,20 +46,20 @@
 
 
 {% elseif column.is_boolean %}
-<label for="{{column.get_name}}-yes" class="radio-inline">
-	<input type="radio" name="{{column.get_name}}" id="{{column.get_name}}-yes"
-		value="1" {% if attribute(record, column.get_name) is sameas(true) %}checked{% endif %} />
+<label for="{{column.getName}}-yes" class="radio-inline">
+	<input type="radio" name="{{column.getName}}" id="{{column.getName}}-yes"
+		value="1" {% if attribute(record, column.getName) is sameas(true) %}checked{% endif %} />
 	Yes
 </label>
-<label for="{{column.get_name}}-no" class="radio-inline">
-	<input type="radio" name="{{column.get_name}}" id="{{column.get_name}}-no" class="radio-inline"
-		value="0" {% if attribute(record, column.get_name) is sameas(false) %}checked{% endif %} />
+<label for="{{column.getName}}-no" class="radio-inline">
+	<input type="radio" name="{{column.getName}}" id="{{column.getName}}-no" class="radio-inline"
+		value="0" {% if attribute(record, column.getName) is sameas(false) %}checked{% endif %} />
 	No
 </label>
 {% if column.is_null %}
-<label for="{{column.get_name}}-null" title="Not Applicable" class="radio-inline">
-	<input type="radio" name="{{column.get_name}}" id="{{column.get_name}}-null" class="radio-inline"
-		value="" {% if attribute(record, column.get_name) is null %}checked{% endif %} />
+<label for="{{column.getName}}-null" title="Not Applicable" class="radio-inline">
+	<input type="radio" name="{{column.getName}}" id="{{column.getName}}-null" class="radio-inline"
+		value="" {% if attribute(record, column.getName) is null %}checked{% endif %} />
 	N/A
 </label>
 {% endif %}
@@ -67,23 +67,23 @@
 
 
 {% elseif column.get_type=='text' %}
-<textarea name="{{column.get_name}}" id="{{column.get_name}}" aria-describedby="{{column.get_name}}-help"
+<textarea name="{{column.getName}}" id="{{column.getName}}" aria-describedby="{{column.getName}}-help"
 		  {% if column.is_required %}required{% endif %} rows="5" cols="80"
-		  class="form-control">{{ attribute(record, column.get_name)}}</textarea>
+		  class="form-control">{{ attribute(record, column.getName)}}</textarea>
 
 
 
 {% elseif column.get_type=='point' %}
-<div class="point-column" id="{{column.get_name}}">
-	<input type="text" name="{{column.get_name}}" value="{{ attribute(record, column.get_name)}}" class="form-control" />
-	<div class="map" id="{{column.get_name}}-map"></div>
+<div class="point-column" id="{{column.getName}}">
+	<input type="text" name="{{column.getName}}" value="{{ attribute(record, column.getName)}}" class="form-control" />
+	<div class="map" id="{{column.getName}}-map"></div>
 </div>
 
 
 
 {% else %}
-<input type="text" name="{{column.get_name}}" id="{{column.get_name}}" value="{{ attribute(record, column.get_name)}}"
-	   aria-describedby="{{column.get_name}}-help" data-column-type="{{column.get_type}}"
+<input type="text" name="{{column.getName}}" id="{{column.getName}}" value="{{ attribute(record, column.getName)}}"
+	   aria-describedby="{{column.getName}}-help" data-column-type="{{column.get_type}}"
 	   {% if column.is_auto_increment %}readonly{% endif %}
 	   {% if column.is_required and not column.is_auto_increment %}required{% endif %}
 	   class="form-control column-type-{{column.get_type}}" />

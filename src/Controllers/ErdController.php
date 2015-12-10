@@ -4,7 +4,8 @@ namespace Tabulate\Controllers;
 
 use Tabulate\Config;
 
-class ErdController extends ControllerBase {
+class ErdController extends ControllerBase
+{
 
     /** @var array|string */
     private $tables;
@@ -12,7 +13,8 @@ class ErdController extends ControllerBase {
     /** @var array|string */
     private $selectedTables;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
         $db = new \Tabulate\DB\Database();
         $this->selectedTables = array();
@@ -33,7 +35,8 @@ class ErdController extends ControllerBase {
         }
     }
 
-    public function index() {
+    public function index()
+    {
         $template = new \Tabulate\Template('erd/display.twig');
         $template->title = 'ERD';
         $template->tables = $this->tables;
@@ -48,7 +51,8 @@ class ErdController extends ControllerBase {
         echo $template->render();
     }
 
-    public function render() {
+    public function render()
+    {
 
         // Generate the DOT source code, and write to a file.
         $dot = new \Tabulate\Template('erd/erd.twig');
@@ -86,5 +90,4 @@ class ErdController extends ControllerBase {
         // Clean up.
         \Tabulate\File::rmdir($tmpFilePath);
     }
-
 }

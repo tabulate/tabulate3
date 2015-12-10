@@ -2,19 +2,24 @@
 
 namespace Tabulate\Controllers;
 
-abstract class ControllerBase {
+abstract class ControllerBase
+{
 
-    public function __construct() {
+    public function __construct()
+    {
+        
     }
 
-    protected function redirect($route) {
+    protected function redirect($route)
+    {
         $url = \Tabulate\Config::baseUrl() . '/' . ltrim($route, '/ ');
         http_response_code(303);
         header("Location: $url");
         exit(1);
     }
 
-    protected function send_file($ext, $mime, $content, $download_name = false) {
+    protected function send_file($ext, $mime, $content, $download_name = false)
+    {
         $download_name = ($download_name ? : date('Y-m-d') ) . '.' . $ext;
         header('Content-Encoding: UTF-8');
         header('Content-type: ' . $mime . '; charset=UTF-8');
@@ -22,5 +27,4 @@ abstract class ControllerBase {
         echo $content;
         exit;
     }
-
 }

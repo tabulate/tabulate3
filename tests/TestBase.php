@@ -1,82 +1,57 @@
 <?php
 
-class TestBase extends WP_UnitTestCase {
+class TestBase extends PHPUnit_Framework_TestCase
+{
 
-	/** @var WordPress\Tabulate\DB\Database */
-	protected $db;
+    public function setUp()
+    {
+        parent::setUp();
 
-	/** @var wpdb */
-	protected $wpdb;
+        // Install.
+        $upgrade = new \Tabulate\Commands\UpgradeCommand();
+        $upgrade->run();
 
-	public function setUp() {
-		parent::setUp();
-		global $wpdb;
+        $db = new Tabulate\DB\Database();
+        // Create some testing tables and link them together.
+        $db->query('DROP TABLE IF EXISTS `test_table`');
+        $db->query('CREATE TABLE `test_table` ('
+                . ' id INT(10) AUTO_INCREMENT PRIMARY KEY,'
+                . ' title VARCHAR(100) NOT NULL,'
+                . ' description TEXT NULL,'
+                . ' active BOOLEAN NULL DEFAULT TRUE,'
+                . ' a_date DATE NULL,'
+                . ' a_year YEAR NULL,'
+                . ' type_id INT(10) NULL DEFAULT NULL,'
+                . ' widget_size DECIMAL(10,2) NOT NULL DEFAULT 5.6,'
+                . ' ranking INT(3) NULL DEFAULT NULL,'
+                . ' a_numeric NUMERIC(7,2) NULL DEFAULT NULL COMMENT "NUMERIC is the same as DECIMAL."'
+                . ');'
+        );
+        $db->query('DROP TABLE IF EXISTS `test_types`');
+        $db->query('CREATE TABLE `test_types` ('
+                . ' id INT(10) AUTO_INCREMENT PRIMARY KEY,'
+                . ' title VARCHAR(100) NOT NULL UNIQUE'
+                . ');'
+        );
+        $db->query('ALTER TABLE `test_table` '
+                . ' ADD FOREIGN KEY ( `type_id` )'
+                . ' REFERENCES `test_types` (`id`)'
+                . ' ON DELETE CASCADE ON UPDATE CASCADE;'
+        );
+    }
 
-		// Current a test user and make them current.
-		$tester = get_user_by( 'email', 'test@example.com' );
-		if ( ! $tester ) {
-			$tester_id = wp_create_user( 'tester', 'test123', 'test@example.com' );
-		} else {
-			$tester_id = $tester->ID;
-		}
-		wp_set_current_user( $tester_id );
+    public function tearDown()
+    {
+        // Remove test tables.
+        $db = new Tabulate\DB\Database();
+        $db->query('SET FOREIGN_KEY_CHECKS = 0');
+        $db->query('DROP TABLE IF EXISTS `test_types`');
+        $db->query('DROP TABLE IF EXISTS `test_table`');
+        $db->query('SET FOREIGN_KEY_CHECKS = 1');
 
-		// Get the database.
-		$this->wpdb = $wpdb;
+//        $ct = new \WordPress\Tabulate\DB\ChangeTracker();
+//        $ct->close_changeset();
 
-		// Prevent parent from enforcing TEMPORARY tables.
-		remove_filter( 'query', array( $this, '_create_temporary_tables' ) );
-		remove_filter( 'query', array( $this, '_drop_temporary_tables' ) );
-
-		// Activate.
-		do_action( 'activate_tabulate/tabulate.php' );
-
-		// Create some testing tables and link them together.
-		$this->wpdb->query( 'DROP TABLE IF EXISTS `test_table`' );
-		$this->wpdb->query( 'CREATE TABLE `test_table` ('
-			. ' id INT(10) AUTO_INCREMENT PRIMARY KEY,'
-			. ' title VARCHAR(100) NOT NULL,'
-			. ' description TEXT NULL,'
-			. ' active BOOLEAN NULL DEFAULT TRUE,'
-			. ' a_date DATE NULL,'
-			. ' a_year YEAR NULL,'
-			. ' type_id INT(10) NULL DEFAULT NULL,'
-			. ' widget_size DECIMAL(10,2) NOT NULL DEFAULT 5.6,'
-			. ' ranking INT(3) NULL DEFAULT NULL,'
-			. ' a_numeric NUMERIC(7,2) NULL DEFAULT NULL COMMENT "NUMERIC is the same as DECIMAL."'
-			. ');'
-		);
-		$this->wpdb->query( 'DROP TABLE IF EXISTS `test_types`' );
-		$this->wpdb->query( 'CREATE TABLE `test_types` ('
-			. ' id INT(10) AUTO_INCREMENT PRIMARY KEY,'
-			. ' title VARCHAR(100) NOT NULL UNIQUE'
-			. ');'
-		);
-		$this->wpdb->query( 'ALTER TABLE `test_table` '
-			. ' ADD FOREIGN KEY ( `type_id` )'
-			. ' REFERENCES `test_types` (`id`)'
-			. ' ON DELETE CASCADE ON UPDATE CASCADE;'
-		);
-		$this->db = new WordPress\Tabulate\DB\Database( $this->wpdb );
-	}
-
-	public function tearDown() {
-		// Remove test tables.
-		$this->wpdb->query( 'SET FOREIGN_KEY_CHECKS = 0' );
-		$this->wpdb->query( 'DROP TABLE IF EXISTS `test_types`' );
-		$this->wpdb->query( 'DROP TABLE IF EXISTS `test_table`' );
-		$this->wpdb->query( 'SET FOREIGN_KEY_CHECKS = 1' );
-
-		$ct = new \WordPress\Tabulate\DB\ChangeTracker($this->wpdb);
-		$ct->close_changeset();
-
-		// Uninstall
-		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-			define( 'WP_UNINSTALL_PLUGIN', 'tabulate/tabulate.php' );
-		}
-		require __DIR__ . '/../uninstall.php';
-
-		parent::tearDown();
-	}
-
+        parent::tearDown();
+    }
 }

@@ -5,9 +5,11 @@ namespace Tabulate\Controllers;
 use \Tabulate\DB\Grants;
 use \Tabulate\DB\Database;
 
-class TableController extends ControllerBase {
+class TableController extends ControllerBase
+{
 
-    private function get_table($table_name) {
+    private function get_table($table_name)
+    {
         $db = new Database();
         $table = $db->get_table($table_name);
         if (!$table) {
@@ -20,7 +22,8 @@ class TableController extends ControllerBase {
         return $table;
     }
 
-    public function index($args) {
+    public function index($args)
+    {
         $table = $this->get_table($args['table']);
         if (!$table instanceof \Tabulate\DB\Table) {
             return $table;
@@ -95,7 +98,8 @@ class TableController extends ControllerBase {
      *
      * @return void
      */
-    public function import($args) {
+    public function import($args)
+    {
         $template = new \WordPress\Tabulate\Template('import.html');
         // Set up the progress bar.
         $template->stages = array(
@@ -180,7 +184,8 @@ class TableController extends ControllerBase {
         return $template->render();
     }
 
-    public function calendar($args) {
+    public function calendar($args)
+    {
         // @todo Validate args.
         $yearNum = (isset($args['year'])) ? $args['year'] : date('Y');
         $monthNum = (isset($args['month'])) ? $args['month'] : date('m');
@@ -225,7 +230,8 @@ class TableController extends ControllerBase {
      *
      * @return void
      */
-    public function export($args) {
+    public function export($args)
+    {
         // Get database and table.
         $table = $this->get_table($args['table']);
 
@@ -244,7 +250,8 @@ class TableController extends ControllerBase {
         exit(0);
     }
 
-    public function timeline($args) {
+    public function timeline($args)
+    {
         $table = $this->get_table($args['table']);
         $template = new \WordPress\Tabulate\Template('timeline.html');
         $template->action = 'timeline';
@@ -271,5 +278,4 @@ class TableController extends ControllerBase {
         $template->data = $data;
         return $template->render();
     }
-
 }

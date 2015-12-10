@@ -1,4 +1,4 @@
-<phpunit bootstrap="tests/bootstrap.php"
+<phpunit bootstrap="vendor/autoload.php"
          backupGlobals="false"
          colors="false"
          convertErrorsToExceptions="true"
@@ -12,4 +12,7 @@
     <logging>
         <log type="testdox-html" target="testdox.html"/>
     </logging>
+    <php>
+        <env name="TABULATE_CONFIG_FILE" value="tests/config.php" />
+    </php>
 </phpunit>
