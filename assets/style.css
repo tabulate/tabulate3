@@ -24,15 +24,6 @@ form.tabulate-grants tr.select-all td { border-width:0 0 1px 0 }
 form.tabulate-grants td.select-all { border-width:0 1px }
 form.tabulate-grants tr.select-all td.label { border-width:0 0 0 1px; vertical-align:middle; text-align:center; font-size:larger }
 
-form.tabulate-record input.column-type-date,
-form.tabulate-record input.column-type-datetime,
-form.tabulate-record input.column-type-time { position:relative; z-index:100; width:15em }
-form.tabulate-record th.column-title { vertical-align:top; text-align:left }
-form.tabulate-record .foreign-key label { text-align:left }
-form.tabulate-record .foreign-key input.form-control { width:83% }
-form.tabulate-record .foreign-key span.input-group-addon { color:#555 }
-form.tabulate-record .point-column .map { width:450px; height:200px; border:1px solid #ddd }
-
 .tabulate .postbox-container.record-meta { float:none }
 .tabulate .postbox-container .related-records .hndle { cursor:pointer }
 .tabulate .postbox-container .related-records .inside { margin:0; padding:0 }

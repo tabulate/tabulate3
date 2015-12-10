@@ -2,76 +2,66 @@
 
 {% block content %}
 
-<form method="post" action="{{baseurl}}/record/{{table.getName}}" class="tabulate-record">
-	<table>
+<form method="post" action="{{baseurl}}/record/{{table.getName}}" class="form-inline">
 
-		{% for column in table.getColumns %}
-		<tr>
-			<th class="column-title">
-				<label for="{{column.getName}}" class="right inline">{{column.getTitle}}
-				{% if column.is_required and not column.is_auto_increment %}*{% endif %}
-				</label>
-			</th>
+    {% for column in table.getColumns %}
+    <p>
+        <label for="{{column.getName}}" class="inline {% if column.is_required and not column.is_auto_increment %}text-warning{% endif %}">
+            {{column.getTitle}}
+        </label>
 
-			<td class='form-field form-required'><!-- Data entry cell -->
-				{% include 'field/edit.twig' %}
-			</td><!-- End data entry cell -->
+        <!-- Data entry cell -->
+        {% include 'field/edit.twig' %}
+        <!-- End data entry cell -->
 
-			<td>
-				<label id="{{column.getName}}-help" class="inline" for="{{column.name}}">
-					<em>{{column.get_comment}}</em>
+        {%if column.get_comment %}<em>{{column.get_comment}}</em>{% endif %}
 
-					{% if column.is_unique %}
-					The value of this field must be unique.
-					{% endif %}
+        {% if column.is_unique %}
+        The value of this field must be unique.
+        {% endif %}
 
-					{% if column.is_foreign_key %}
-					This field is a cross reference to
-					{% if attribute(record, column.getName) %}
-					<a href="{{ record.get_referenced_record(column.getName).get_url }}">
-						Record <em>{{attribute(record, column.getName)}}</em>
-					</a>
-					of
-					{% endif %}
-					<a href="{{baseurl}}/table/{{column.get_referenced_table.getName}}">{{column.get_referenced_table.getTitle}}</a>.
-					{% endif %}
+        {% if column.is_foreign_key %}
+        This field is a cross reference to
+        {% if attribute(record, column.getName) %}
+        <a href="{{ record.get_referenced_record(column.getName).get_url }}">
+            Record <em>{{attribute(record, column.getName)}}</em>
+        </a>
+        of
+        {% endif %}
+        <a href="{{baseurl}}/table/{{column.get_referenced_table.getName}}">{{column.get_referenced_table.getTitle}}</a>.
+        {% endif %}
 
-					{% if column.is_auto_increment %}A value for this field will be assigned automatically.{% endif %}
+        {% if column.is_auto_increment %}A value for this field will be assigned automatically.{% endif %}
 
-					{% if column.get_type == 'year' %}
-					Only the years 1901&ndash;2155 can be entered here.
-					<a href="https://dev.mysql.com/doc/refman/5.6/en/year.html" target="_blank" title="The MySQL DATE type (opens in a new tab)">
-						(Why?)
-					</a>
-					{% endif %}
+        {% if column.get_type == 'year' %}
+        Only the years 1901&ndash;2155 can be entered here.
+        <a href="https://dev.mysql.com/doc/refman/5.6/en/year.html" target="_blank" title="The MySQL DATE type (opens in a new tab)">
+            (Why?)
+        </a>
+        {% endif %}
 
-				</label>
-			</td>
-		</tr>
+    </p>
+    {% endfor %}
 
-	{% endfor %}
-		<tr>
-			<td></td>
-			<td colspan="2">
-				<p><label>* An asterisk denotes a required field.</label></p>
-				<p>
-					Describe the changes you've made:
-					<input type="text" name="changeset_comment" />
+    <div class="well">
+        <p>
+            <label for="changeset_comment" class="inline">Describe the changes you've made:</label>
+            <input type="text" id="changeset_comment" name="changeset_comment" class="form-control" size="80" />
+        </p>
+        <p>
+            <input type="submit" value="Save" class="btn btn-info" />
+            {% if return_to %}
+            <input type="hidden" name="return_to" value="{{return_to}}" />
+            <a href="{{return_to}}" class="button">Cancel</a>
+            {% endif %}
 
-					<input type="submit" value="Save" class="button success" />
-					{% if return_to %}
-					<input type="hidden" name="return_to" value="{{return_to}}" />
-					<a href="{{return_to}}" class="button">Cancel</a>
-					{% endif %}
+            {% if record.getPrimaryKey() %}
+            <input type="hidden" name="primary_key_value" value="{{record.getPrimaryKey()}}" />
+            <a href="{{record.get_url('delete')}}" class="btn btn-default" title="Delete this record">Delete</a>
+            {% endif %}
+        </p>
+    </div>
 
-					{% if record.getPrimaryKey() %}
-					<input type="hidden" name="primary_key_value" value="{{record.getPrimaryKey()}}" />
-					<a href="{{record.get_url('delete')}}" class="button" title="Delete this record">Delete</a>
-					{% endif %}
-				</p>
-			</td>
-		</tr>
-	</table>
 </form>
 
 {% if record.getPrimaryKey %}

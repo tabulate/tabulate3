@@ -11,7 +11,7 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
         if (!$db->get_table('users')) {
             $this->write("Creating table 'users'");
             $db->query("CREATE TABLE `users` ("
-                    . " `id` INT(10) UNSIGNED NOT NULL PRIMARY KEY,"
+                    . " `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     . " `name` VARCHAR(200) NOT NULL UNIQUE,"
                     . " `password` VARCHAR(100) NOT NULL"
                     . ");");
@@ -19,14 +19,14 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
         if (!$db->get_table('users')) {
             $this->write("Creating table 'users'");
             $db->query("CREATE TABLE `users` ("
-                    . " `id` INT(10) UNSIGNED NOT NULL PRIMARY KEY,"
+                    . " `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     . " `name` VARCHAR(200) NOT NULL UNIQUE"
                     . ");");
         }
         if (!$db->get_table('groups')) {
             $this->write("Creating table 'groups'");
             $db->query("CREATE TABLE `groups` ("
-                    . " `id` INT(10) UNSIGNED NOT NULL PRIMARY KEY,"
+                    . " `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     . " `name` VARCHAR(200) NOT NULL UNIQUE"
                     . ");");
         }
@@ -43,7 +43,7 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
         if (!$db->get_table('grants')) {
             $this->write("Creating table 'grants'");
             $db->query("CREATE TABLE `grants` ("
-                    . " `id` INT(10) UNSIGNED NOT NULL PRIMARY KEY,"
+                    . " `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     . " `group` INT(10) UNSIGNED NOT NULL,"
                     . " FOREIGN KEY (`group`) REFERENCES `groups` (`id`),"
                     . " `permission` VARCHAR(200) NOT NULL DEFAULT '*',"
