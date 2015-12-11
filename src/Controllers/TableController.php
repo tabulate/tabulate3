@@ -4,6 +4,7 @@ namespace Tabulate\Controllers;
 
 use \Tabulate\DB\Grants;
 use \Tabulate\DB\Database;
+use \Tabulate\Template;
 
 class TableController extends ControllerBase
 {
@@ -11,7 +12,7 @@ class TableController extends ControllerBase
     private function get_table($table_name)
     {
         $db = new Database();
-        $table = $db->get_table($table_name);
+        $table = $db->getTable($table_name);
         if (!$table) {
             add_action('admin_notices', function($table_name) use ($table_name) {
                 echo "<div class='error'><p>Table '" . $table_name . "' not found.</p></div>";
@@ -48,7 +49,7 @@ class TableController extends ControllerBase
         $filter_param = (isset($args['filter'])) ? $args['filter'] : array();
         $table->add_filters($filter_param);
         $filters = $table->get_filters();
-        $title_col = $table->get_title_column();
+        $title_col = $table->getTitleColumn();
         $first_filter = ( $title_col ) ? $title_col->getName() : '';
         $filters[] = array(
             'column' => $first_filter,
@@ -60,7 +61,7 @@ class TableController extends ControllerBase
         $template = new \Tabulate\Template('table.twig');
         $template->controller = 'table';
         $template->table = $table;
-        $template->tables = $table->getDatabase()->get_tables();
+        $template->tables = $table->getDatabase()->getTables();
         $template->title = $table->getTitle();
         $template->columns = $table->getColumns();
         $template->operators = $table->get_operators();
@@ -69,7 +70,7 @@ class TableController extends ControllerBase
         $template->sortable = true;
         $template->record = $table->get_default_record();
         $template->records = $table->get_records();
-        $template->record_count = $table->count_records();
+        $template->record_count = $table->getRecordCount();
         echo $template->render();
     }
 
@@ -100,7 +101,7 @@ class TableController extends ControllerBase
      */
     public function import($args)
     {
-        $template = new \WordPress\Tabulate\Template('import.html');
+        $template = new Template('import.html');
         // Set up the progress bar.
         $template->stages = array(
             'choose_file',
@@ -128,7 +129,7 @@ class TableController extends ControllerBase
         try {
             $hash = isset($_GET['hash']) ? $_GET['hash'] : false;
             $uploaded = isset($_FILES['file']) ? wp_handle_upload($_FILES['file'], array('action' => $template->action)) : false;
-            $csv_file = new \WordPress\Tabulate\CSV($hash, $uploaded);
+            $csv_file = new \Tabulate\CSV($hash, $uploaded);
         } catch (\Exception $e) {
             $template->add_notice('error', $e->getMessage());
             return $template->render();
@@ -156,7 +157,7 @@ class TableController extends ControllerBase
                 // done in the CSV class. Missing columns don't matter if importing
                 // existing records.
                 $missing = empty($_POST['columns'][$col->getName()]);
-                $pk_present = isset($_POST['columns'][$table->get_pk_column()->getName()]);
+                $pk_present = isset($_POST['columns'][$table->getPkColumn()->getName()]);
                 if (!$pk_present && $col->is_required() && $missing) {
                     $errors[] = array(
                         'column_name' => '',
@@ -190,7 +191,7 @@ class TableController extends ControllerBase
         $yearNum = (isset($args['year'])) ? $args['year'] : date('Y');
         $monthNum = (isset($args['month'])) ? $args['month'] : date('m');
 
-        $template = new \WordPress\Tabulate\Template('calendar.html');
+        $template = new \Tabulate\Template('calendar.html');
         $table = $this->get_table($args['table']);
 
         $template->table = $table;
@@ -205,8 +206,8 @@ class TableController extends ControllerBase
         foreach ($table->getColumns('date') as $dateCol) {
             $dateColName = $dateCol->getName();
             // Filter to the just the requested month.
-            $table->add_filter($dateColName, '>=', $month->getBegin()->format('Y-m-d'));
-            $table->add_filter($dateColName, '<=', $month->getEnd()->format('Y-m-d'));
+            $table->addFilter($dateColName, '>=', $month->getBegin()->format('Y-m-d'));
+            $table->addFilter($dateColName, '<=', $month->getEnd()->format('Y-m-d'));
             foreach ($table->get_records() as $rec) {
                 $dateVal = $rec->$dateColName();
                 // Initialise the day's list of records.
@@ -253,7 +254,7 @@ class TableController extends ControllerBase
     public function timeline($args)
     {
         $table = $this->get_table($args['table']);
-        $template = new \WordPress\Tabulate\Template('timeline.html');
+        $template = new \Tabulate\Template('timeline.html');
         $template->action = 'timeline';
         $template->table = $table;
         $start_date_arg = (isset($args['start_date'])) ? $args['start_date'] : date('Y-m-d');

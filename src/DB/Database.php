@@ -3,8 +3,10 @@
 namespace Tabulate\DB;
 
 use Tabulate\Config;
+use Tabulate\DB\Tables\Users;
 
-class Database {
+class Database
+{
 
     /** @var \PDO */
     static protected $pdo;
@@ -18,7 +20,12 @@ class Database {
     /** @var array|string */
     static protected $queries;
 
-    public function __construct() {
+    /** @var integer The ID of the current user. */
+    protected $currentUserId;
+
+    public function __construct()
+    {
+        $this->currentUserId = Users::ANON;
         if (self::$pdo) {
             return;
         }
@@ -30,11 +37,13 @@ class Database {
         $this->setFetchMode(\PDO::FETCH_OBJ);
     }
 
-    public static function getQueries() {
+    public static function getQueries()
+    {
         return self::$queries;
     }
 
-    public function setFetchMode($fetchMode) {
+    public function setFetchMode($fetchMode)
+    {
         return self::$pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, $fetchMode);
     }
 
@@ -45,47 +54,47 @@ class Database {
      * @param array $params Array of param => value pairs.
      * @return \PDOStatement Resulting PDOStatement.
      */
-    public function query($sql, $params = false, $class = false, $classArgs = false) {
+    public function query($sql, $params = false, $class = false, $classArgs = false)
+    {
         if (!empty($class) && !class_exists($class)) {
             throw new \Exception("Class not found: $class");
         }
-        if (is_array($params) && count($params) > 0) {
-            $stmt = self::$pdo->prepare($sql);
-            foreach ($params as $placeholder => $value) {
-                if (is_bool($value)) {
-                    $type = \PDO::PARAM_BOOL;
-                } elseif (is_null($value)) {
-                    $type = \PDO::PARAM_NULL;
-                } elseif (is_int($value)) {
-                    $type = \PDO::PARAM_INT;
-                } else {
-                    $type = \PDO::PARAM_STR;
+        try {
+            if (is_array($params) && count($params) > 0) {
+                $stmt = self::$pdo->prepare($sql);
+                foreach ($params as $placeholder => $value) {
+                    if (is_bool($value)) {
+                        $type = \PDO::PARAM_BOOL;
+                    } elseif (is_null($value)) {
+                        $type = \PDO::PARAM_NULL;
+                    } elseif (is_int($value)) {
+                        $type = \PDO::PARAM_INT;
+                    } else {
+                        $type = \PDO::PARAM_STR;
+                    }
+                    //echo '<li>';var_dump($value, $type);
+                    $stmt->bindValue($placeholder, $value, $type);
                 }
-                //echo '<li>';var_dump($value, $type);
-                $stmt->bindValue($placeholder, $value, $type);
-            }
-            if ($class) {
-                $stmt->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $class, $classArgs);
+                if ($class) {
+                    $stmt->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $class, $classArgs);
+                } else {
+                    $stmt->setFetchMode(\PDO::FETCH_OBJ);
+                }
+                $result = $stmt->execute();
+                if (!$result) {
+                    throw new \PDOException('Unable to execute parameterised SQL: <code>' . $sql . '</code>');
+                } else {
+                    //echo '<p>Executed: '.$sql.'<br />with '.  print_r($params, true).'</p>';
+                }
             } else {
-                $stmt->setFetchMode(\PDO::FETCH_OBJ);
-            }
-            $result = $stmt->execute();
-            if (!$result) {
-                throw new \PDOException('Unable to execute parameterised SQL: <code>' . $sql . '</code>');
-            } else {
-                //echo '<p>Executed: '.$sql.'<br />with '.  print_r($params, true).'</p>';
-            }
-            //exit();
-        } else {
-            try {
                 if ($class) {
                     $stmt = self::$pdo->query($sql, \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $class, $classArgs);
                 } else {
                     $stmt = self::$pdo->query($sql);
                 }
-            } catch (\PDOException $e) {
-                throw new \Exception($e->getMessage() . ' -- Unable to execute SQL: <code>' . $sql . '</code>');
             }
+        } catch (\PDOException $e) {
+            throw new \Exception($e->getMessage() . ' -- Unable to execute SQL: <code>' . $sql . '</code> Parameters: ' . print_r($params, true));
         }
 
         self::$queries[] = $sql;
@@ -93,31 +102,73 @@ class Database {
     }
 
     /**
+     * Get the most-recently inserted auto_increment ID.
+     * @return integer
+     */
+    public static function lastInsertId()
+    {
+        return (int) self::$pdo->lastInsertId();
+    }
+
+    /**
      * Get a list of tables that the current user can read.
      * @return string[] The table names.
      */
-    public function get_table_names() {
-        if (!$this->table_names) {
-            $this->table_names = array();
-            foreach ($this->query('SHOW TABLES')->fetchAll() as $row) {
-                $tableName = $row->{'Tables_in_'.Config::databaseName()};
+    public function getTableNames($checkGrants = true)
+    {
+        //if (!$this->table_names) {
+        $this->table_names = array();
+        foreach ($this->query('SHOW TABLES')->fetchAll() as $row) {
+            $tableName = $row->{'Tables_in_' . Config::databaseName()};
+            if (!$checkGrants || $this->checkGrant(Tables\Grants::READ, $tableName)) {
                 $this->table_names[] = $tableName;
-//                if (Grants::current_user_can(Grants::READ, $table_name)) {
-//                    $this->table_names[] = $table_name;
-//                }
             }
         }
+        //}
         return $this->table_names;
+    }
+
+    public function checkGrant($permission, $tableName)
+    {
+        if ($tableName instanceof Table) {
+            $tableName = $tableName->getName();
+        }
+        echo "checking $permission on $tableName ";
+        $sql = "SELECT COUNT(*) "
+                . " FROM `grants` "
+                . "   JOIN `groups` ON `groups`.`id` = `grants`.`group` "
+                . "   JOIN `group_members` ON `group_members`.`group` = `groups`.`id`"
+                . " WHERE "
+                . "   (`table_name`='*' OR `table_name` = :table_name) "
+                . "   AND `permission` LIKE :permission "
+                . "   AND `group_members`.`user` = :user ";
+        $params = ['table_name' => $tableName, 'permission' => $permission, 'user' => $this->currentUserId];
+        $permissions = $this->query($sql, $params)->fetchColumn();
+        $perm = $permissions > 0;
+        echo " = ".$perm."\n";
+        return $perm;
+    }
+
+    public function setCurrentUser($userId)
+    {
+        echo "changing current user to $userId\n";
+        $this->currentUserId = $userId;
+    }
+
+    public function getCurrentUser()
+    {
+        return $this->currentUserId;
     }
 
     /**
      * Get a table from the database.
      *
      * @param string $name
-     * @return \WordPress\Tabulate\DB\Table|false The table, or false if it's not available.
+     * @return \Tabulate\DB\Table|false The table, or false if it's not available.
      */
-    public function get_table($name) {
-        if (!in_array($name, $this->get_table_names())) {
+    public function getTable($name, $checkGrants = true)
+    {
+        if (!in_array($name, $this->getTableNames($checkGrants))) {
             return false;
         }
         if (!isset($this->tables[$name])) {
@@ -130,7 +181,8 @@ class Database {
      * Forget all table information, forcing it to be re-read from the database
      * when next required. Used after schema changes.
      */
-    public function reset() {
+    public function reset()
+    {
         $this->table_names = false;
         $this->tables = false;
     }
@@ -140,15 +192,16 @@ class Database {
      *
      * @return Table[] An array of all Tables.
      */
-    public function get_tables($exclude_views = true) {
+    public function getTables($excludeViews = true)
+    {
         $out = array();
-        foreach ($this->get_table_names() as $name) {
-            $table = $this->get_table($name);
+        foreach ($this->getTableNames() as $name) {
+            $table = $this->getTable($name);
             // If this table is not available, skip it.
             if (!$table) {
                 continue;
             }
-            if ($exclude_views && $table->get_type() == Table::TYPE_VIEW) {
+            if ($excludeViews && $table->getType() == Table::TYPE_VIEW) {
                 continue;
             }
             $out[] = $table;
@@ -161,14 +214,14 @@ class Database {
      *
      * @return Table|array An array of all Tables that are views.
      */
-    public function get_views() {
+    public function getViews()
+    {
         $out = array();
-        foreach ($this->get_tables(false) as $table) {
-            if ($table->get_type() == Table::TYPE_VIEW) {
+        foreach ($this->getTables(false) as $table) {
+            if ($table->getType() == Table::TYPE_VIEW) {
                 $out[] = $table;
             }
         }
         return $out;
     }
-
 }

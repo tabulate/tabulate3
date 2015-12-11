@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e52c63860f18281948375ae66764a5ec",
-    "content-hash": "fad27422dfa5462a98fd8b99c6b97c58",
+    "hash": "edf2eec51b6ee1b456788af02cd01d19",
+    "content-hash": "b86b12e97c9fc0c6784aac1a969fe1d6",
     "packages": [
         {
             "name": "components/bootstrap",
@@ -172,16 +172,16 @@
         },
         {
             "name": "eloquent/asplode",
-            "version": "2.0.1",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/eloquent/asplode.git",
-                "reference": "6c15bfa11d72b76be9b0a31a145dc2b122db455b"
+                "reference": "f00c6cb1576bef84080cf4d2785e6e8dbf8d9e7d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eloquent/asplode/zipball/6c15bfa11d72b76be9b0a31a145dc2b122db455b",
-                "reference": "6c15bfa11d72b76be9b0a31a145dc2b122db455b",
+                "url": "https://api.github.com/repos/eloquent/asplode/zipball/f00c6cb1576bef84080cf4d2785e6e8dbf8d9e7d",
+                "reference": "f00c6cb1576bef84080cf4d2785e6e8dbf8d9e7d",
                 "shasum": ""
             },
             "require": {
@@ -189,7 +189,10 @@
                 "php": ">=5.3"
             },
             "require-dev": {
-                "icecave/archer": "~1"
+                "eloquent/phony": "dev-develop",
+                "icecave/archer": "dev-develop",
+                "phpunit/phpunit": "^4",
+                "sami/sami": "^3"
             },
             "type": "library",
             "autoload": {
@@ -219,7 +222,7 @@
                 "handler",
                 "handling"
             ],
-            "time": "2014-10-29 00:15:53"
+            "time": "2015-12-11 00:24:24"
         },
         {
             "name": "eternicode/bootstrap-datepicker",
@@ -275,58 +278,6 @@
                 "datepicker"
             ],
             "time": "2015-10-18 12:49:47"
-        },
-        {
-            "name": "hybridauth/hybridauth",
-            "version": "2.5.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/hybridauth/hybridauth.git",
-                "reference": "d2f0d638aa3f63f0763d9ee1fb63865376aac884"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/hybridauth/hybridauth/zipball/d2f0d638aa3f63f0763d9ee1fb63865376aac884",
-                "reference": "d2f0d638aa3f63f0763d9ee1fb63865376aac884",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "php": ">=5.2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Hybrid": "hybridauth/"
-                },
-                "classmap": [
-                    "hybridauth/Hybrid"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "(MIT or GPL-3.0+)"
-            ],
-            "authors": [
-                {
-                    "name": "Miled",
-                    "email": "hybridauth@gmail.com"
-                }
-            ],
-            "description": "Open source social sign on PHP library.",
-            "homepage": "http://hybridauth.sourceforge.net",
-            "keywords": [
-                "OpenId",
-                "facebook",
-                "google",
-                "hybridauth",
-                "login",
-                "oauth",
-                "social",
-                "twitter",
-                "yahoo"
-            ],
-            "time": "2015-10-12 19:47:19"
         },
         {
             "name": "icecave/isolator",
@@ -462,6 +413,45 @@
                 "minification"
             ],
             "time": "2015-11-12 13:51:40"
+        },
+        {
+            "name": "nayjest/str-case-converter",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Nayjest/StrCaseConverter.git",
+                "reference": "e30f16afec3ed83e12369555e264263c23cf68bb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Nayjest/StrCaseConverter/zipball/e30f16afec3ed83e12369555e264263c23cf68bb",
+                "reference": "e30f16afec3ed83e12369555e264263c23cf68bb",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.*"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Vitalii Stepanenko",
+                    "email": "mail@vitaliy.in"
+                }
+            ],
+            "description": "Library for converting strings from camel case to snake case and vice versa.",
+            "time": "2015-06-04 13:11:29"
         },
         {
             "name": "nikic/fast-route",

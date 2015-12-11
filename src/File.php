@@ -2,9 +2,11 @@
 
 namespace Tabulate;
 
-class File {
+class File
+{
 
-    public static function rmdir($dir) {
+    public static function rmdir($dir)
+    {
         if (!is_dir($dir)) {
             throw new \Exception("'$dir' is not a directory and will not be deleted");
         }
@@ -19,5 +21,4 @@ class File {
         }
         rmdir($dir);
     }
-
 }

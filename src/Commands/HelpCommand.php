@@ -2,9 +2,11 @@
 
 namespace Tabulate\Commands;
 
-class HelpCommand extends CommandBase {
+class HelpCommand extends CommandBase
+{
 
-    public function run() {
+    public function run()
+    {
         $it = new \RecursiveDirectoryIterator(__DIR__, \RecursiveDirectoryIterator::SKIP_DOTS);
         $files = new \RecursiveIteratorIterator($it, \RecursiveIteratorIterator::CHILD_FIRST);
         $commands = [];
@@ -19,5 +21,4 @@ class HelpCommand extends CommandBase {
             $this->write("   $cmd");
         }
     }
-
 }

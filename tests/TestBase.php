@@ -6,6 +6,7 @@ class TestBase extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         parent::setUp();
+        \Eloquent\Asplode\Asplode::install();
 
         // Install.
         $upgrade = new \Tabulate\Commands\UpgradeCommand();
@@ -42,16 +43,13 @@ class TestBase extends PHPUnit_Framework_TestCase
 
     public function tearDown()
     {
-        // Remove test tables.
+        // Remove all tables.
         $db = new Tabulate\DB\Database();
         $db->query('SET FOREIGN_KEY_CHECKS = 0');
-        $db->query('DROP TABLE IF EXISTS `test_types`');
-        $db->query('DROP TABLE IF EXISTS `test_table`');
+        foreach ($db->getTableNames(false) as $tbl) {
+            $db->query("DROP TABLE IF EXISTS `$tbl`");
+        }
         $db->query('SET FOREIGN_KEY_CHECKS = 1');
-
-//        $ct = new \WordPress\Tabulate\DB\ChangeTracker();
-//        $ct->close_changeset();
-
         parent::tearDown();
     }
 }

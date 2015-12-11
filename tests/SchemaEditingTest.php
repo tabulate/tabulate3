@@ -17,12 +17,12 @@ class SchemaEditingTest extends TestBase
      */
     public function renameTable()
     {
-        $test_table = $this->db->get_table('test_table');
+        $test_table = $this->db->getTable('test_table');
         $test_table->rename('testing_table');
-        $testing_table = $this->db->get_table('testing_table');
+        $testing_table = $this->db->getTable('testing_table');
         $this->assertEquals('testing_table', $testing_table->getName());
         $this->assertEquals('testing_table', $test_table->getName());
-        $this->assertFalse($this->db->get_table('test_table'));
+        $this->assertFalse($this->db->getTable('test_table'));
     }
 
     /**
@@ -32,14 +32,14 @@ class SchemaEditingTest extends TestBase
     public function renameTableHistory()
     {
         // Create a record in the table and check its history size.
-        $test_table = $this->db->get_table('test_table');
-        $rec1 = $test_table->save_record(array('title' => 'Testing'));
+        $test_table = $this->db->getTable('test_table');
+        $rec1 = $test_table->saveRecord(array('title' => 'Testing'));
         $this->assertEquals(1, $rec1->id());
         $this->assertCount(4, $rec1->get_changes());
 
         // Rename the table, and make sure the history is the same size.
         $test_table->rename('testing_table');
-        $testing_table = $this->db->get_table('testing_table');
+        $testing_table = $this->db->getTable('testing_table');
         $rec2 = $testing_table->getRecord(1);
         $this->assertCount(4, $rec2->get_changes());
     }

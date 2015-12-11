@@ -7,7 +7,7 @@ class UserController extends \Tabulate\Controllers\ControllerBase
 
     public function loginForm()
     {
-        $template = new \Tabulate\Template('login.twig');
+        $template = new \Tabulate\Template('users/login.twig');
         $template->title = 'Log in';
         echo $template->render();
     }

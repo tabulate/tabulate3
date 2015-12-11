@@ -8,14 +8,14 @@ class GrantsController extends ControllerBase
     /** @var array|string */
     private $table_names;
 
-    /** @var \WordPress\Tabulate\Template */
+    /** @var \Tabulate\Template */
     private $template;
 
     public function __construct($wpdb)
     {
         parent::__construct($wpdb);
         $db = new \Tabulate\DB\Database($this->wpdb);
-        $this->table_names = $db->get_table_names();
+        $this->table_names = $db->getTableNames();
         $this->template = new \Tabulate\Template('grants.html');
     }
 

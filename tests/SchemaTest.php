@@ -1,6 +1,7 @@
 <?php
 
-use WordPress\Tabulate\DB\Grants;
+use Tabulate\DB\Database;
+use Tabulate\DB\User;
 
 class SchemaTest extends TestBase
 {
@@ -11,16 +12,18 @@ class SchemaTest extends TestBase
      */
     public function no_access()
     {
+        $user = new User();
+        $db = new Database();
+        $db->setUser($user);
 
         // Make sure they can't see anything yet.
-        $current_user->remove_cap('promote_users');
-        $this->assertFalse(current_user_can('promote_users'));
-        $this->assertEmpty($this->db->get_table_names());
+        $this->assertFalse($user->isAdmin());
+        $this->assertEmpty($db->getTableNames());
 
         // Now promote them, and try again.
         $current_user->add_cap('promote_users');
         $this->assertTrue(current_user_can('promote_users'));
-        $table_names = $this->db->get_table_names();
+        $table_names = $this->db->getTableNames();
         // A WP core table.
         $this->assertContains($this->wpdb->prefix . 'posts', $table_names);
         // And one of ours.
@@ -44,13 +47,13 @@ class SchemaTest extends TestBase
         );
 
         // That test_table references test_types
-        $test_table = $this->db->get_table('test_table');
+        $test_table = $this->db->getTable('test_table');
         $referenced_tables = $test_table->get_referenced_tables(true);
         $referenced_table = array_pop($referenced_tables);
         $this->assertEquals('test_types', $referenced_table->getName());
 
         // And the other way around.
-        $type_table = $this->db->get_table('test_types');
+        $type_table = $this->db->getTable('test_types');
         $referencing_tables = $type_table->get_referencing_tables();
         $referencing_table = array_pop($referencing_tables);
         $this->assertEquals('test_table', $referencing_table['table']->getName());
@@ -88,8 +91,8 @@ class SchemaTest extends TestBase
                 . ' ADD FOREIGN KEY ( `type_1_b` ) REFERENCES `test_widget_types_1` (`id`),'
                 . ' ADD FOREIGN KEY ( `type_2` ) REFERENCES `test_widget_types_2` (`id`);'
         );
-        $db = new WordPress\Tabulate\DB\Database($this->wpdb);
-        $table = $db->get_table('test_widgets');
+        $db = new \Tabulate\DB\Database($this->wpdb);
+        $table = $db->getTable('test_widgets');
 
         // Check references from Widgets to Types.
         $referencedTables = $table->get_referenced_tables();
@@ -99,7 +102,7 @@ class SchemaTest extends TestBase
         $this->assertArrayHasKey('type_2', $referencedTables);
 
         // Check references from Types to Widgets.
-        $type1 = $db->get_table('test_widget_types_1');
+        $type1 = $db->getTable('test_widget_types_1');
         $referencingTables = $type1->get_referencing_tables();
         $this->assertCount(2, $referencingTables);
     }
@@ -111,19 +114,19 @@ class SchemaTest extends TestBase
     public function required_columns()
     {
         // 'widget_size' is a not-null column with a default value.
-        $test_table = $this->db->get_table('test_table');
-        $widget_size_col = $test_table->get_column('widget_size');
+        $test_table = $this->db->getTable('test_table');
+        $widget_size_col = $test_table->getColumn('widget_size');
         $this->assertFalse($widget_size_col->is_required());
         // 'title' is a not-null column with no default.
-        $title_col = $test_table->get_column('title');
+        $title_col = $test_table->getColumn('title');
         $this->assertTrue($title_col->is_required());
 
         // Create a basic record.
         $widget = array(
             'title' => 'Test Item'
         );
-        $test_table->save_record($widget);
-        $this->assertEquals(1, $test_table->count_records());
+        $test_table->saveRecord($widget);
+        $this->assertEquals(1, $test_table->getRecordCount());
         $widget_records = $test_table->get_records();
         $widget_record = array_shift($widget_records);
         $this->assertEquals(5.6, $widget_record->widget_size());
@@ -135,14 +138,14 @@ class SchemaTest extends TestBase
      */
     public function null_values()
     {
-        $test_table = $this->db->get_table('test_table');
+        $test_table = $this->db->getTable('test_table');
 
         // Start with null.
         $widget = array(
             'title' => 'Test Item',
             'ranking' => null,
         );
-        $record = $test_table->save_record($widget);
+        $record = $test_table->saveRecord($widget);
         $this->assertEquals('Test Item', $record->title());
         $this->assertNull($record->ranking());
 
@@ -151,7 +154,7 @@ class SchemaTest extends TestBase
             'title' => 'Test Item',
             'ranking' => 12,
         );
-        $record = $test_table->save_record($widget, 1);
+        $record = $test_table->saveRecord($widget, 1);
         $this->assertEquals(12, $record->ranking());
 
         // Then update to null again.
@@ -159,7 +162,7 @@ class SchemaTest extends TestBase
             'title' => 'Test Item',
             'ranking' => null,
         );
-        $record = $test_table->save_record($widget, 1);
+        $record = $test_table->saveRecord($widget, 1);
         $this->assertNull($record->ranking());
     }
 
@@ -169,18 +172,18 @@ class SchemaTest extends TestBase
      */
     public function empty_string()
     {
-        $test_table = $this->db->get_table('test_table');
+        $test_table = $this->db->getTable('test_table');
         // Title is NOT NULL.
-        $this->assertTrue($test_table->get_column('title')->allows_empty_string());
+        $this->assertTrue($test_table->getColumn('title')->allows_empty_string());
         // Description is NULLable.
-        $this->assertFalse($test_table->get_column('description')->allows_empty_string());
+        $this->assertFalse($test_table->getColumn('description')->allows_empty_string());
 
         // Check with some data.
         $data = array(
             'title' => '',
             'description' => '',
         );
-        $record = $test_table->save_record($data);
+        $record = $test_table->saveRecord($data);
         $this->assertSame('', $record->title());
         $this->assertNull($record->description());
     }
@@ -191,8 +194,8 @@ class SchemaTest extends TestBase
      */
     public function date_and_time()
     {
-        $test_table = $this->db->get_table('test_table');
-        $rec = $test_table->save_record(array(
+        $test_table = $this->db->getTable('test_table');
+        $rec = $test_table->saveRecord(array(
             'title' => 'Test',
             'a_date' => '1980-01-01',
             'a_year' => '1980',
@@ -213,10 +216,10 @@ class SchemaTest extends TestBase
                 . ' description TEXT'
                 . ');'
         );
-        $db = new WordPress\Tabulate\DB\Database($this->wpdb);
-        $tbl = $db->get_table('test_varchar_pk');
-        $this->assertEquals('ident', $tbl->get_pk_column()->getName());
-        $rec = $tbl->save_record(array('ident' => 'TEST123'));
+        $db = new \Tabulate\DB\Database($this->wpdb);
+        $tbl = $db->getTable('test_varchar_pk');
+        $this->assertEquals('ident', $tbl->getPkColumn()->getName());
+        $rec = $tbl->saveRecord(array('ident' => 'TEST123'));
         $this->assertEquals('TEST123', $rec->getPrimaryKey());
     }
 
@@ -226,13 +229,13 @@ class SchemaTest extends TestBase
      */
     public function decimal()
     {
-        $test_table = $this->db->get_table('test_table');
-        $rec = $test_table->save_record(array(
+        $test_table = $this->db->getTable('test_table');
+        $rec = $test_table->saveRecord(array(
             'title' => 'Decimal Test',
             'a_numeric' => '123.4',
         ));
         $this->assertEquals('123.40', $rec->a_numeric());
-        $comment = $test_table->get_column('a_numeric')->get_comment();
+        $comment = $test_table->getColumn('a_numeric')->get_comment();
         $this->assertEquals('NUMERIC is the same as DECIMAL.', $comment);
     }
     /**
@@ -247,7 +250,7 @@ class SchemaTest extends TestBase
       . ' PRIMARY KEY (ident_a, ident_b)'
       . ');'
       );
-      $db = new WordPress\Tabulate\DB\Database( $this->wpdb );
+      $db = new \Tabulate\DB\Database( $this->wpdb );
       $tbl = $db->get_table( 'test_multicol_primary_key' );
       var_dump($tbl->get_pk_column()->get_name());
       } */
@@ -275,10 +278,10 @@ class SchemaTest extends TestBase
 			ENGINE InnoDB
 			COMMENT 'producto concertado con un proveedor o proveedores';";
         $this->wpdb->query($sql);
-        $db = new WordPress\Tabulate\DB\Database($this->wpdb);
-        $tbl = $db->get_table('test_pb_servicio');
-        $this->assertTrue($tbl->get_column('s_pre')->is_numeric());
-        $rec = $tbl->save_record(array(
+        $db = new \Tabulate\DB\Database($this->wpdb);
+        $tbl = $db->getTable('test_pb_servicio');
+        $this->assertTrue($tbl->getColumn('s_pre')->is_numeric());
+        $rec = $tbl->saveRecord(array(
             's_id' => 'TEST',
             's_nom' => 'A name',
             's_pre' => 123.45,
@@ -286,7 +289,7 @@ class SchemaTest extends TestBase
         ));
         $this->assertEquals(123.45, $rec->s_pre());
         $this->assertEquals(0.21, $rec->s_iva());
-        $s_pre = $tbl->get_column('s_pre');
+        $s_pre = $tbl->getColumn('s_pre');
         $this->assertTrue($s_pre->is_numeric());
         $this->assertEquals(1, $rec->s_bitblo());
     }
@@ -303,9 +306,9 @@ class SchemaTest extends TestBase
                 . "  `title` VARCHAR(100) "
                 . ");";
         $this->wpdb->query($sql);
-        $db = new WordPress\Tabulate\DB\Database($this->wpdb);
-        $tbl = $db->get_table('provided_pk');
-        $rec = $tbl->save_record(array('code' => 'TEST'));
+        $db = new \Tabulate\DB\Database($this->wpdb);
+        $tbl = $db->getTable('provided_pk');
+        $rec = $tbl->saveRecord(array('code' => 'TEST'));
         $this->assertEquals('TEST', $rec->getPrimaryKey());
     }
 }

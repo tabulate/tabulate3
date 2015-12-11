@@ -1,8 +1,8 @@
 <?php
 
-namespace WordPress\Tabulate\Controllers;
+namespace Tabulate\Controllers;
 
-use WordPress\Tabulate\DB\Database;
+use \Tabulate\DB\Database;
 
 class MapController extends ControllerBase
 {
@@ -10,13 +10,13 @@ class MapController extends ControllerBase
     /** @var string The name of the POINT column. */
     protected $point_col_name;
 
-    /** @var \WordPress\Tabulate\DB\Table */
+    /** @var \Tabulate\DB\Table */
     protected $table;
 
     protected function set_up($args)
     {
         $db = new Database($this->wpdb);
-        $this->table = $db->get_table($args['table']);
+        $this->table = $db->getTable($args['table']);
 
         // Check that a point column exists.
         $points = $this->table->getColumns('point');
@@ -30,12 +30,12 @@ class MapController extends ControllerBase
         // Apply filters.
         $filter_param = (isset($args['filter'])) ? $args['filter'] : array();
         $this->table->add_filters($filter_param);
-        $this->table->add_filter($this->point_col_name, 'not empty', '');
+        $this->table->addFilter($this->point_col_name, 'not empty', '');
     }
 
     protected function byline()
     {
-        return 'Tabulate ' . TABULATE_VERSION . ' (WordPress plugin)';
+        return 'Tabulate ' . TABULATE_VERSION;
     }
 
     public function osm($args)
@@ -64,7 +64,7 @@ class MapController extends ControllerBase
                 $tag = $node->addChild('tag');
                 $col_name = $col->getName();
                 $tag->addAttribute('k', $col_name);
-                $fktitle = $col_name . \WordPress\Tabulate\DB\Record::FKTITLE;
+                $fktitle = $col_name . \Tabulate\DB\Record::FKTITLE;
                 $tag->addAttribute('v', $record->$fktitle());
             }
         }
@@ -118,7 +118,7 @@ class MapController extends ControllerBase
                     // Don't include the geometry column.
                     continue;
                 }
-                $fktitle = $col->getName() . \WordPress\Tabulate\DB\Record::FKTITLE;
+                $fktitle = $col->getName() . \Tabulate\DB\Record::FKTITLE;
                 $value = $record->$fktitle();
                 $categories->addChild('gpxx:Categories', $col->getTitle() . ": $value", 'gpxx');
                 $waypoint_extension->addChild('gpxx:' . $col->getName(), $value, 'gpxx');

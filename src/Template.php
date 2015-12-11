@@ -134,7 +134,7 @@ class Template
         $twig = new \Twig_Environment($this->loader);
 
         // Add titlecase filter.
-        $titlecase_filter = new \Twig_SimpleFilter('titlecase', '\\WordPress\\Tabulate\\Text::titlecase');
+        $titlecase_filter = new \Twig_SimpleFilter('titlecase', '\\Tabulate\\Text::titlecase');
         $twig->addFilter($titlecase_filter);
 
         // Add strtolower filter.

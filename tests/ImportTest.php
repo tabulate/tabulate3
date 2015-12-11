@@ -33,21 +33,21 @@ class ImportTest extends TestBase
      */
     public function basic_import()
     {
-        $testtypes_table = $this->db->get_table('test_types');
+        $testtypes_table = $this->db->getTable('test_types');
         $csv = '"ID","Title"' . "\r\n"
                 . '"1","One"' . "\r\n"
                 . '"2","Two"' . "\r\n";
         $uploaded = $this->save_data_file($csv);
-        $csv = new WordPress\Tabulate\CSV(null, $uploaded);
+        $csv = new \Tabulate\CSV(null, $uploaded);
         $csv->load_data();
         $column_map = array('title' => 'Title');
         $csv->import_data($testtypes_table, $column_map);
         // Make sure 2 records were imported.
-        $this->assertEquals(2, $testtypes_table->count_records());
+        $this->assertEquals(2, $testtypes_table->getRecordCount());
         $rec1 = $testtypes_table->getRecord(1);
         $this->assertEquals('One', $rec1->title());
         // And that 1 changeset was created, with 4 changes.
-        $change_tracker = new \WordPress\Tabulate\DB\ChangeTracker($this->wpdb);
+        $change_tracker = new \Tabulate\DB\ChangeTracker($this->wpdb);
         $sql = "SELECT COUNT(id) FROM " . $change_tracker->changesets_name();
         $this->assertEquals(1, $this->wpdb->get_var($sql));
         $sql = "SELECT COUNT(id) FROM " . $change_tracker->changes_name();
@@ -60,21 +60,21 @@ class ImportTest extends TestBase
      */
     public function primary_key()
     {
-        $testtable = $this->db->get_table('test_table');
-        $rec1 = $testtable->save_record(array('title' => 'PK Test'));
-        $this->assertEquals(1, $testtable->count_records());
+        $testtable = $this->db->getTable('test_table');
+        $rec1 = $testtable->saveRecord(array('title' => 'PK Test'));
+        $this->assertEquals(1, $testtable->getRecordCount());
         $this->assertNull($rec1->description());
 
         // Add a field's value.
         $csv = '"ID","Title","Description"' . "\r\n"
                 . '"1","One","A description"' . "\r\n";
         $uploaded = $this->save_data_file($csv);
-        $csv = new WordPress\Tabulate\CSV(null, $uploaded);
+        $csv = new \Tabulate\CSV(null, $uploaded);
         $csv->load_data();
         $column_map = array('id' => 'ID', 'title' => 'Title', 'description' => 'Description');
         $csv->import_data($testtable, $column_map);
         // Make sure there's still only one record, and that it's been updated.
-        $this->assertEquals(1, $testtable->count_records());
+        $this->assertEquals(1, $testtable->getRecordCount());
         $rec2 = $testtable->getRecord(1);
         $this->assertEquals('One', $rec2->title());
         $this->assertEquals('A description', $rec2->description());
@@ -83,12 +83,12 @@ class ImportTest extends TestBase
         $csv = '"ID","Description"' . "\r\n"
                 . '"1","New description"' . "\r\n";
         $uploaded2 = $this->save_data_file($csv);
-        $csv2 = new WordPress\Tabulate\CSV(null, $uploaded2);
+        $csv2 = new \Tabulate\CSV(null, $uploaded2);
         $csv2->load_data();
         $column_map2 = array('id' => 'ID', 'description' => 'Description');
         $csv2->import_data($testtable, $column_map2);
         // Make sure there's still only one record, and that it's been updated.
-        $this->assertEquals(1, $testtable->count_records());
+        $this->assertEquals(1, $testtable->getRecordCount());
         $rec3 = $testtable->getRecord(1);
         $this->assertEquals('One', $rec3->title());
         $this->assertEquals('New description', $rec3->description());

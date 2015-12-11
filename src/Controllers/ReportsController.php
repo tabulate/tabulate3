@@ -1,9 +1,9 @@
 <?php
 
-namespace WordPress\Tabulate\Controllers;
+namespace Tabulate\Controllers;
 
-use \WordPress\Tabulate\DB\Database;
-use \WordPress\Tabulate\DB\Reports;
+use \Tabulate\DB\Database;
+use \Tabulate\DB\Reports;
 
 class ReportsController extends ControllerBase
 {

@@ -39,7 +39,7 @@ class Table
     protected $referenced_table_names;
 
     /** @var int Each joined table gets a unique alias, based on this. */
-    protected $alias_count = 1;
+    protected $aliasCount = 1;
 
     /**
      * @var \Tabulate\DB\Column[] Array of column names and objects for all of the
@@ -76,10 +76,10 @@ class Table
     protected $order_dir = 'ASC';
 
     /** @var RecordCounter */
-    protected $record_counter;
+    protected $recordCounter;
 
     /** @var integer The current page number. */
-    protected $current_page_num = 1;
+    protected $currentPageNum = 1;
 
     /** @var integer The number of records to show on each page. */
     protected $records_per_page = 30;
@@ -87,7 +87,7 @@ class Table
     /**
      * Create a new database table object.
      *
-     * @param \WordPress\Tabulate\DB\Database $database The database to which this table belongs.
+     * @param \Tabulate\DB\Database $database The database to which this table belongs.
      * @param string $name The name of the table.
      */
     public function __construct($database, $name)
@@ -100,17 +100,17 @@ class Table
             $column = new Column($this->database, $this, $column_info);
             $this->columns[$column->getName()] = $column;
         }
-        $this->record_counter = new RecordCounter($this);
+        $this->recordCounter = new RecordCounter($this);
     }
 
     /**
      * Add a filter.
-     * @param string|\WordPress\Tabulate\DB\Column $column Column name or object.
+     * @param string|\Tabulate\DB\Column $column Column name or object.
      * @param string $operator
      * @param string $value
      * @param boolean $force Whether to transform the value, for FKs.
      */
-    public function add_filter($column, $operator, $value, $force = false)
+    public function addFilter($column, $operator, $value, $force = false)
     {
         // Allow Columns to be passed in.
         if ($column instanceof Column) {
@@ -141,7 +141,7 @@ class Table
             $column = (isset($filter['column'])) ? $filter['column'] : false;
             $operator = (isset($filter['operator'])) ? $filter['operator'] : false;
             $value = (isset($filter['value'])) ? $filter['value'] : false;
-            $this->add_filter($column, $operator, $value);
+            $this->addFilter($column, $operator, $value);
         }
     }
 
@@ -154,7 +154,7 @@ class Table
     {
         return 'LEFT OUTER JOIN `' . $table->getName() . '` AS f' . $alias
                 . ' ON (`' . $this->getName() . '`.`' . $column->getName() . '` '
-                . ' = `f' . $alias . '`.`' . $table->get_pk_column()->getName() . '`)';
+                . ' = `f' . $alias . '`.`' . $table->getPkColumn()->getName() . '`)';
     }
 
     /**
@@ -176,7 +176,7 @@ class Table
 
             // Filters on foreign keys need to work on the FKs title column.
             $column = $this->columns[$f_column];
-            if ($column->is_foreign_key() && !$filter['force']) {
+            if ($column->isForeignKey() && !$filter['force']) {
                 $join = $this->join_on($column);
                 $f_column = $join['column_alias'];
                 $join_clause .= $join['join_clause'];
@@ -278,48 +278,48 @@ class Table
      * the alias will just be the qualified column name, and the join clause will
      * be the empty string.
      *
-     * @param Column $column The FK column
+     * @param \Tabulate\DB\Column $column The FK column
      * @return array Array with 'join_clause' and 'column_alias' keys
      */
     public function join_on($column)
     {
-        $join_clause = '';
-        $column_alias = '`' . $this->getName() . '`.`' . $column->getName() . '`';
-        if ($column->is_foreign_key()) {
-            $fk1_table = $column->get_referenced_table();
-            $fk1_title_column = $fk1_table->get_title_column();
-            $join_clause .= ' LEFT OUTER JOIN `' . $fk1_table->getName() . '` AS f' . $this->alias_count
+        $joinClause = '';
+        $columnAlias = '`' . $this->getName() . '`.`' . $column->getName() . '`';
+        if ($column->isForeignKey()) {
+            $fk1Table = $column->getReferencedTable();
+            $fk1TitleColumn = $fk1Table->getTitleColumn();
+            $joinClause .= ' LEFT OUTER JOIN `' . $fk1Table->getName() . '` AS f' . $this->aliasCount
                     . ' ON (`' . $this->getName() . '`.`' . $column->getName() . '` '
-                    . ' = `f' . $this->alias_count . '`.`' . $fk1_table->get_pk_column()->getName() . '`)';
-            $column_alias = "`f$this->alias_count`.`" . $fk1_title_column->getName() . "`";
+                    . ' = `f' . $this->aliasCount . '`.`' . $fk1Table->getPkColumn()->getName() . '`)';
+            $columnAlias = "`f$this->aliasCount`.`" . $fk1TitleColumn->getName() . "`";
             // FK is also an FK?
-            if ($fk1_title_column->is_foreign_key()) {
-                $fk2_table = $fk1_title_column->get_referenced_table();
-                $fk2_title_column = $fk2_table->get_title_column();
-                $join_clause .= ' LEFT OUTER JOIN `' . $fk2_table->getName() . '` AS ff' . $this->alias_count
-                        . ' ON (f' . $this->alias_count . '.`' . $fk1_title_column->getName() . '` '
-                        . ' = ff' . $this->alias_count . '.`' . $fk1_table->get_pk_column()->getName() . '`)';
-                $column_alias = "`ff$this->alias_count`.`" . $fk2_title_column->getName() . "`";
+            if ($fk1TitleColumn->isForeignKey()) {
+                $fk2_table = $fk1TitleColumn->getReferencedTable();
+                $fk2_title_column = $fk2_table->getTitleColumn();
+                $joinClause .= ' LEFT OUTER JOIN `' . $fk2_table->getName() . '` AS ff' . $this->aliasCount
+                        . ' ON (f' . $this->aliasCount . '.`' . $fk1TitleColumn->getName() . '` '
+                        . ' = ff' . $this->aliasCount . '.`' . $fk1Table->getPkColumn()->getName() . '`)';
+                $columnAlias = "`ff$this->aliasCount`.`" . $fk2_title_column->getName() . "`";
             }
-            $this->alias_count++;
+            $this->aliasCount++;
         }
-        return array('join_clause' => $join_clause, 'column_alias' => $column_alias);
+        return array('join_clause' => $joinClause, 'column_alias' => $columnAlias);
     }
 
     /**
      * Get rows, optionally with pagination.
      * @param boolean $with_pagination Whether to only return the top N results.
      * @param boolean $save_sql Whether to store the SQL for later use.
-     * @return \WordPress\Tabulate\DB\Record[]
+     * @return \Tabulate\DB\Record[]
      */
     public function get_records($with_pagination = true, $save_sql = false)
     {
         // Build basic SELECT statement.
-        $sql = 'SELECT ' . $this->columns_sql_select() . ' FROM `' . $this->getName() . '`';
+        $sql = 'SELECT ' . $this->columnsSqlSelect() . ' FROM `' . $this->getName() . '`';
 
         // Ordering.
         if (false !== $this->get_order_by()) {
-            $order_by = $this->get_column($this->get_order_by());
+            $order_by = $this->getColumn($this->get_order_by());
             if ($order_by) {
                 $order_by_join = $this->join_on($order_by);
                 $sql .= $order_by_join['join_clause'] . ' ORDER BY ' . $order_by_join['column_alias'] . ' ' . $this->get_order_dir();
@@ -355,12 +355,12 @@ class Table
 
     public function get_current_page_num()
     {
-        return $this->current_page_num;
+        return $this->currentPageNum;
     }
 
     public function set_current_page_num($current_page_num)
     {
-        $this->current_page_num = $current_page_num;
+        $this->currentPageNum = $current_page_num;
     }
 
     public function get_records_per_page()
@@ -385,7 +385,7 @@ class Table
      * Get the SQL for SELECTing all columns in this table.
      * @return string
      */
-    private function columns_sql_select()
+    private function columnsSqlSelect()
     {
         $select = array();
         $table_name = $this->getName();
@@ -407,15 +407,16 @@ class Table
      */
     public function getRecord($pk_val)
     {
-        $pk_column = $this->get_pk_column();
+        $pk_column = $this->getPkColumn();
         if (!$pk_column) {
             return false;
         }
-        $sql = "SELECT " . $this->columns_sql_select() . " "
+        $pkColName = $pk_column->getName();
+        $sql = "SELECT " . $this->columnsSqlSelect() . " "
                 . "FROM `" . $this->getName() . "` "
-                . "WHERE `" . $pk_column->getName() . "` = %s "
+                . "WHERE `$pkColName` = :$pkColName "
                 . "LIMIT 1";
-        $params = array($pk_val);
+        $params = array($pkColName => $pk_val);
         $row = $this->database->query($sql, $params)->fetch();
         return ( $row ) ? new Record($this, $row) : false;
     }
@@ -437,7 +438,7 @@ class Table
 
     public function has_changes_recorded()
     {
-        return !in_array($this->getName(), ChangeTracker::table_names());
+        return !in_array($this->getName(), ChangeTracker::tableNames());
     }
 
     /**
@@ -455,7 +456,7 @@ class Table
      *
      * @return string Either `Table::TYPE_TABLE` or `Table::TYPE_VIEW`.
      */
-    public function get_type()
+    public function getType()
     {
         return $this->type;
     }
@@ -464,9 +465,9 @@ class Table
      * Whether this table is a table (as opposed to a view).
      * @return boolean
      */
-    public function is_table()
+    public function isTable()
     {
-        return $this->get_type() == self::TYPE_TABLE;
+        return $this->getType() == self::TYPE_TABLE;
     }
 
     /**
@@ -475,7 +476,7 @@ class Table
      */
     public function is_view()
     {
-        return $this->get_type() == self::TYPE_VIEW;
+        return $this->getType() == self::TYPE_VIEW;
     }
 
     /**
@@ -486,7 +487,7 @@ class Table
      */
     public function is_updatable()
     {
-        if ($this->is_table()) {
+        if ($this->isTable()) {
             return true;
         }
         return false;
@@ -515,7 +516,7 @@ class Table
 
     public function get_page_count()
     {
-        return ceil($this->count_records() / $this->get_records_per_page());
+        return ceil($this->getRecordCount() / $this->get_records_per_page());
     }
 
     /**
@@ -527,9 +528,9 @@ class Table
     public function page($page = false)
     {
         if ($page !== false) {
-            $this->current_page_num = $page;
+            $this->currentPageNum = $page;
         } else {
-            return $this->current_page_num;
+            return $this->currentPageNum;
         }
     }
 
@@ -537,9 +538,9 @@ class Table
      * Get the number of rows in the current filtered set.
      * @return integer
      */
-    public function count_records()
+    public function getRecordCount()
     {
-        return $this->record_counter->get_count();
+        return $this->recordCounter->getCount();
     }
 
     /**
@@ -552,7 +553,7 @@ class Table
         $column_headers = array();
         $join_clause = '';
         foreach ($this->columns as $col_name => $col) {
-            if ($col->is_foreign_key()) {
+            if ($col->isForeignKey()) {
                 $col_join = $this->join_on($col);
                 $column_name = $col_join['column_alias'];
                 $join_clause .= $col_join['join_clause'];
@@ -612,7 +613,7 @@ class Table
      * @param string $name The column name.
      * @return \Tabulate\DB\Column|false The column, or false if it's not found.
      */
-    public function get_column($name)
+    public function getColumn($name)
     {
         return ( isset($this->columns[$name]) ) ? $this->columns[$name] : false;
     }
@@ -621,7 +622,7 @@ class Table
      * Get a list of this table's columns, optionally constrained by their type.
      *
      * @param string $type Only return columns of this type.
-     * @return \WordPress\Tabulate\DB\Column[] This table's columns.
+     * @return \Tabulate\DB\Column[] This table's columns.
      */
     public function getColumns($type = null)
     {
@@ -659,7 +660,7 @@ class Table
 
     /**
      * Get a list of all the unique columns in this table.
-     * @return \WordPress\Tabulate\DB\Column[]
+     * @return \Tabulate\DB\Column[]
      */
     public function get_unique_columns()
     {
@@ -676,9 +677,9 @@ class Table
      * Get the first unique-keyed column.
      * If there is no unique non-PK column then just use the PK.
      *
-     * @return \WordPress\Tabulate\DB\Column
+     * @return \Tabulate\DB\Column
      */
-    public function get_title_column()
+    public function getTitleColumn()
     {
         // Try to get the first non-PK unique key.
         foreach ($this->getColumns() as $column) {
@@ -687,7 +688,7 @@ class Table
             }
         }
         // But if that fails, just use the primary key.
-        return $this->get_pk_column();
+        return $this->getPkColumn();
     }
 
     /**
@@ -718,9 +719,9 @@ class Table
     /**
      * Get this table's Primary Key column.
      *
-     * @return \WordPress\Tabulate\DB\Column|false The PK column or false if there isn't one.
+     * @return \Tabulate\DB\Column|false The PK column or false if there isn't one.
      */
-    public function get_pk_column()
+    public function getPkColumn()
     {
         foreach ($this->getColumns() as $column) {
             if ($column->is_primary_key()) {
@@ -772,7 +773,7 @@ class Table
     {
         $out = array();
         // For all tables in the Database...
-        foreach ($this->getDatabase()->get_tables() as $table) {
+        foreach ($this->getDatabase()->getTables() as $table) {
             // ...get a list of the tables they reference.
             $foreign_tables = $table->get_referenced_tables();
             foreach ($foreign_tables as $foreign_column => $referenced_table_name) {
@@ -889,7 +890,7 @@ class Table
         $rec = $this->getRecord($pk_value);
         $wpdb = $this->database->get_wpdb();
         $wpdb->hide_errors();
-        $del = $wpdb->delete($this->getName(), array($this->get_pk_column()->getName() => $pk_value));
+        $del = $wpdb->delete($this->getName(), array($this->getPkColumn()->getName() => $pk_value));
         if (!$del) {
             throw new Exception($wpdb->last_error);
         }
@@ -899,7 +900,7 @@ class Table
             $where_2 = array('id' => $change->changeset_id);
             $wpdb->delete(ChangeTracker::changesets_name(), $where_2);
         }
-        $this->record_counter->clear();
+        $this->recordCounter->clear();
     }
 
     /**
@@ -907,15 +908,17 @@ class Table
      * updated; otherwise, a new row will be inserted.
      *
      * @param array  $data The data to insert.
-     * @param string $pk_value The value of the record's PK. Null if the record doesn't exist.
-     * @return \WordPress\Tabulate\DB\Record The updated or inserted record.
+     * @param string $pkValue The value of the record's PK. Null if the record doesn't exist.
+     * @return \Tabulate\DB\Record The updated or inserted record.
      * @throws Exception If the user doesn't have permission, or something else has gone wrong.
      */
-    public function save_record($data, $pk_value = null)
+    public function saveRecord($data, $pkValue = null, $trackChanges = true)
     {
         // Changeset only created here if not already in progress.
-        $changeset_comment = isset($data['changeset_comment']) ? $data['changeset_comment'] : null;
-        $change_tracker = new ChangeTracker($this->getDatabase(), $changeset_comment);
+        if ($trackChanges) {
+            $changesetComment = isset($data['changeset_comment']) ? $data['changeset_comment'] : null;
+            $changeTracker = new ChangeTracker($this->getDatabase(), $changesetComment);
+        }
 
         $columns = $this->getColumns();
 
@@ -929,30 +932,30 @@ class Table
                 unset($data[$field]);
                 continue;
             }
-            $column = $this->get_column($field);
+            $column = $this->getColumn($field);
 
-            if ($column->is_boolean()) {
-                // Boolean values.
-                $zeroValues = array(0, '0', false, 'false', 'FALSE', 'off', 'OFF', 'no', 'NO');
-                if (( null === $value || '' === $value ) && $column->nullable()) {
-                    $data[$field] = null;
-                    $sqlValues[$field] = 'NULL';
-                } elseif (in_array($value, $zeroValues, true)) {
-                    $data[$field] = false;
-                    $sqlValues[$field] = '0';
-                } else {
-                    $data[$field] = true;
-                    $sqlValues[$field] = '1';
-                }
-            } elseif (!$column->allows_empty_string() && '' === $value && $column->nullable()) {
-                // Empty strings.
-                $data[$field] = null;
-                $sqlValues[$field] = 'NULL';
-            } elseif (is_null($value) && $column->nullable()) {
-                // Nulls.
-                $data[$field] = null;
-                $sqlValues[$field] = 'NULL';
-            } elseif ($column->get_type() === 'point') {
+//            if ($column->is_boolean()) {
+//                // Boolean values.
+//                $zeroValues = array(0, '0', false, 'false', 'FALSE', 'off', 'OFF', 'no', 'NO');
+//                if (( null === $value || '' === $value ) && $column->nullable()) {
+//                    $data[$field] = null;
+//                    $sqlValues[$field] = 'NULL';
+//                } elseif (in_array($value, $zeroValues, true)) {
+//                    $data[$field] = false;
+//                    $sqlValues[$field] = '0';
+//                } else {
+//                    $data[$field] = true;
+//                    $sqlValues[$field] = '1';
+//                }
+//            } elseif (!$column->allows_empty_string() && '' === $value && $column->nullable()) {
+//                // Empty strings.
+//                $data[$field] = null;
+//                $sqlValues[$field] = 'NULL';
+//            } elseif (is_null($value) && $column->nullable()) {
+//                // Nulls.
+//                $data[$field] = null;
+//                $sqlValues[$field] = 'NULL';
+            if ($column->get_type() === 'point') {
                 // POINT columns.
                 $sqlValues[$field] = "GeomFromText(':$field')";
             } else {
@@ -962,7 +965,7 @@ class Table
         }
 
         // Find the PK.
-        $pk_name = $this->get_pk_column()->getName();
+        $pk_name = $this->getPkColumn()->getName();
 
         // Compile SQL for insert and update statements.
         $itemsForSetClause = array();
@@ -976,51 +979,52 @@ class Table
             unset($data[$pk_name]);
         }
 
-        $change_tracker->before_save($this, $data, $pk_value);
-        if (!empty($pk_value)) { // Update?
+        if ($trackChanges) {
+            $changeTracker->beforeSave($this, $data, $pkValue);
+        }
+        if (!empty($pkValue)) { // Update?
             // Check permission.
 //            if (!Grants::current_user_can(Grants::UPDATE, $this->getName())) {
 //                throw new Exception('You do not have permission to update data in this table.');
 //            }
             $sql = 'UPDATE ' . $this->getName() . " $setClause WHERE `$pk_name` = :pk_value;";
             $this->database->query($sql, $data);
-            $new_pk_value = (isset($data[$pk_name]) ) ? $data[$pk_name] : $pk_value;
+            $newPkValue = (isset($data[$pk_name]) ) ? $data[$pk_name] : $pkValue;
         } else { // Or insert?
             // Check permission.
 //            if (!Grants::current_user_can(Grants::CREATE, $this->getName())) {
 //                throw new Exception('You do not have permission to insert records into this table.');
 //            }
             $sql = 'INSERT INTO ' . $this->getName() . ' ' . $setClause . ';';
-        var_dump($data, $sql);
-        exit();
             $this->database->query($sql, $data);
-            if (!empty($this->database->lastError())) {
-                throw new \Exception('Unable to create record', $this->database->get_wpdb()->last_error, $sql);
-            }
-            if ($this->get_pk_column()->is_auto_increment()) {
+//            if (!empty($this->database->lastError())) {
+//                throw new \Exception('Unable to create record', $this->database->get_wpdb()->last_error, $sql);
+//            }
+            if ($this->getPkColumn()->isAutoIncrement()) {
                 // Use the last insert ID.
-                $new_pk_value = $this->database->get_wpdb()->insert_id;
+                $newPkValue = $this->database->lastInsertId();
             } elseif (isset($data[$pk_name])) {
                 // Or the PK value provided in the data.
-                $new_pk_value = $data[$pk_name];
+                $newPkValue = $data[$pk_name];
             } else {
                 // If neither of those work, how can we find out the new PK value?
                 throw new \Exception("Unable to determine the value of the new record's prmary key.");
             }
         }
-        $new_record = $this->getRecord($new_pk_value);
-        if (!$new_record instanceof Record) {
-            throw new Exception("Unable to fetch record with PK of: <code>" . var_export($new_pk_value, true) . '</code>');
+        $newRecord = $this->getRecord($newPkValue);
+        if (!$newRecord instanceof Record) {
+            throw new Exception("Unable to fetch record with PK of: <code>" . var_export($newPkValue, true) . '</code>');
         }
 
         // Save the changes.
-        $change_tracker->after_save($this, $new_record);
+        if ($trackChanges) {
+            $changeTracker->after_save($this, $newRecord);
+        }
 
         // Show errors again, reset the record count,
         // and return the new or updated record.
-        $this->database->get_wpdb()->show_errors();
-        $this->record_counter->clear();
-        return $new_record;
+        $this->recordCounter->clear();
+        return $newRecord;
     }
 
     /**
@@ -1050,14 +1054,14 @@ class Table
      */
     public function rename($new_name)
     {
-        if ($this->getDatabase()->get_table($new_name)) {
+        if ($this->getDatabase()->getTable($new_name)) {
             throw new Exception("Table '$new_name' already exists");
         }
         $wpdb = $this->getDatabase()->get_wpdb();
         $old_name = $this->getName();
         $wpdb->query("RENAME TABLE `$old_name` TO `$new_name`;");
         $this->getDatabase()->reset();
-        $new = $this->getDatabase()->get_table($new_name, false);
+        $new = $this->getDatabase()->getTable($new_name, false);
         if (!$new) {
             throw new Exception("Table '$old_name' was not renamed to '$new_name'");
         }

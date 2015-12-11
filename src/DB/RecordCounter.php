@@ -13,27 +13,22 @@ namespace Tabulate\DB;
  * A record counter takes care of counting and caching the records in a single
  * table.
  */
-class RecordCounter {
+class RecordCounter
+{
 
     /**
      * The table.
-     * @var \WordPress\Tabulate\DB\Table
+     * @var \Tabulate\DB\Table
      */
     protected $table;
 
     /**
-     * The time-to-live of the cached record count, in seconds.
-     * @var integer
-     */
-    protected $transient_expiration;
-
-    /**
      * Create a new RecordCounter.
-     * @param \WordPress\Tabulate\DB\Table $table The table to count.
+     * @param \Tabulate\DB\Table $table The table to count.
      */
-    public function __construct(\Tabulate\DB\Table $table) {
+    public function __construct(\Tabulate\DB\Table $table)
+    {
         $this->table = $table;
-        $this->transient_expiration = 5 * 60;
     }
 
     /**
@@ -41,18 +36,19 @@ class RecordCounter {
      * tables and where there are no filters.
      * @return integer The record count.
      */
-    public function get_count() {
+    public function getCount()
+    {
         // Only cache if this is a base table and there are no filters.
-        $can_cache = $this->table->is_table() && count($this->table->get_filters()) === 0;
+        $canCache = $this->table->isTable() && count($this->table->get_filters()) === 0;
 
-        if ($can_cache) {
-            if (isset($_SESSION[$this->transient_name()])) {
-                return $_SESSION[$this->transient_name()];
+        if ($canCache) {
+            if (isset($_SESSION[$this->sessionKey()])) {
+                return $_SESSION[$this->sessionKey()];
             }
         }
 
         // Otherwise, run the COUNT() query.
-        $pk_col = $this->table->get_pk_column();
+        $pk_col = $this->table->getPkColumn();
         if ($pk_col instanceof Column) {
             $count_col = '`' . $this->table->getName() . '`.`' . $pk_col->getName() . '`';
         } else {
@@ -64,8 +60,8 @@ class RecordCounter {
             $sql = $this->table->getDatabase()->query($sql, $params);
         }
         $count = $this->table->getDatabase()->query($sql)->fetchColumn();
-        if ($can_cache) {
-            $_SESSION[$this->transient_name()] = $count;
+        if ($canCache) {
+            $_SESSION[$this->sessionKey()] = $count;
         }
         return $count;
     }
@@ -74,17 +70,19 @@ class RecordCounter {
      * Empty the cached record count for this table.
      * @return void
      */
-    public function clear() {
-        delete_transient($this->transient_name());
+    public function clear()
+    {
+        if (isset($_SESSION[$this->sessionKey()])) {
+            unset($_SESSION[$this->sessionKey()]);
+        }
     }
 
     /**
-     * Get the name of the transient under which this table's record count is
-     * stored. All Tabulate transients start with TABULATE_SLUG.
+     * Get the name of the session key under which this table's record count is stored.
      * @return string
      */
-    public function transient_name() {
+    public function sessionKey()
+    {
         return $this->table->getName() . '_count';
     }
-
 }

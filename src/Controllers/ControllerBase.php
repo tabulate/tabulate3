@@ -3,7 +3,6 @@
 namespace Tabulate\Controllers;
 
 use Tabulate\DB\Database;
-use Tabulate\DB\User;
 
 abstract class ControllerBase
 {
@@ -14,7 +13,6 @@ abstract class ControllerBase
     public function __construct()
     {
         $this->db = new Database();
-        $this->user = new User($this->db);
     }
 
     protected function redirect($route)
@@ -22,7 +20,7 @@ abstract class ControllerBase
         $url = \Tabulate\Config::baseUrl() . '/' . ltrim($route, '/ ');
         http_response_code(303);
         header("Location: $url");
-        exit(1);
+        exit(0);
     }
 
     protected function sendFile($ext, $mime, $content, $downloadName = false)

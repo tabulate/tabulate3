@@ -1,6 +1,6 @@
 <?php
 
-use \WordPress\Tabulate\DB\Reports;
+use \Tabulate\DB\Reports;
 
 class ReportsTest extends TestBase
 {
@@ -19,9 +19,9 @@ class ReportsTest extends TestBase
      */
     public function activate()
     {
-        $reports = $this->db->get_table(Reports::reports_table_name());
+        $reports = $this->db->getTable(Reports::reports_table_name());
         $this->assertEquals($this->wpdb->prefix . TABULATE_SLUG . '_reports', $reports->getName());
-        $reportSources = $this->db->get_table(Reports::report_sources_table_name());
+        $reportSources = $this->db->getTable(Reports::report_sources_table_name());
         $this->assertEquals($this->wpdb->prefix . TABULATE_SLUG . '_report_sources', $reportSources->getName());
     }
 
@@ -47,8 +47,8 @@ class ReportsTest extends TestBase
      */
     public function template()
     {
-        $reportsTable = $this->db->get_table(Reports::reports_table_name());
-        $report = $reportsTable->save_record(array(
+        $reportsTable = $this->db->getTable(Reports::reports_table_name());
+        $report = $reportsTable->saveRecord(array(
             'title' => 'Test Report',
             'template' => 'Lorem ipsum.',
         ));
@@ -56,7 +56,7 @@ class ReportsTest extends TestBase
         $reports = new Reports($this->db);
         $template = $reports->get_template($report->id());
         $this->assertEquals('Test Report', $report->title());
-        $this->assertInstanceOf('\WordPress\Tabulate\Template', $template);
+        $this->assertInstanceOf('\Tabulate\Template', $template);
         $this->assertEquals('Lorem ipsum.', $template->render());
     }
 
@@ -66,13 +66,13 @@ class ReportsTest extends TestBase
      */
     public function sources()
     {
-        $reportsTable = $this->db->get_table(Reports::reports_table_name());
-        $report = $reportsTable->save_record(array(
+        $reportsTable = $this->db->getTable(Reports::reports_table_name());
+        $report = $reportsTable->saveRecord(array(
             'title' => 'Test Report',
             'template' => 'Today is {{dates.0.date}}'
         ));
-        $reportSourcesTable = $this->db->get_table(Reports::report_sources_table_name());
-        $reportSourcesTable->save_record(array(
+        $reportSourcesTable = $this->db->getTable(Reports::report_sources_table_name());
+        $reportSourcesTable->saveRecord(array(
             'report' => $report->id(),
             'name' => 'dates',
             'query' => "SELECT CURRENT_DATE AS `date`;",
@@ -88,11 +88,11 @@ class ReportsTest extends TestBase
      */
     public function file_extension()
     {
-        $reportsTable = $this->db->get_table(Reports::reports_table_name());
+        $reportsTable = $this->db->getTable(Reports::reports_table_name());
         $reports = new Reports($this->db);
 
         // 1. No file_extension attribute is set, but the others are.
-        $report1 = $reportsTable->save_record(array(
+        $report1 = $reportsTable->saveRecord(array(
             'title' => 'Test Report 1',
             'mime_type' => 'text/plain',
         ));
@@ -101,7 +101,7 @@ class ReportsTest extends TestBase
         $this->assertEquals('text/plain', $template1->mime_type);
 
         // 2. A 'GPX' file extension is set, and the default mime_type.
-        $report2 = $reportsTable->save_record(array(
+        $report2 = $reportsTable->saveRecord(array(
             'title' => 'Test Report 2',
             'file_extension' => 'gpx',
         ));

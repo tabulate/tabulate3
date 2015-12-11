@@ -21,7 +21,7 @@ class RecordController extends ControllerBase
         $template->table = $table;
         $template->controller = 'record';
         $template->title = $table->getTitle();
-        $template->tables = $table->getDatabase()->get_tables();
+        $template->tables = $table->getDatabase()->getTables();
         return $template;
     }
 
@@ -29,7 +29,7 @@ class RecordController extends ControllerBase
     {
         // Get database and table.
         $db = new \Tabulate\DB\Database();
-        $table = $db->get_table($args['table']);
+        $table = $db->getTable($args['table']);
 
         // Give it all to the template.
         $template = $this->getTemplate($table);
@@ -67,7 +67,7 @@ class RecordController extends ControllerBase
     public function save($args)
     {
         $db = new \Tabulate\DB\Database();
-        $table = $db->get_table($args['table']);
+        $table = $db->getTable($args['table']);
         if (!$table) {
             // It shouldn't be possible to get here via the UI, so no message.
             return false;
@@ -77,7 +77,7 @@ class RecordController extends ControllerBase
         $template = $this->getTemplate($table);
 
         // Make sure we're not saving over an already-existing record.
-        $pk_name = $table->get_pk_column()->getName();
+        $pk_name = $table->getPkColumn()->getName();
         $pk = (isset($_POST[$pk_name])) ? $_POST[$pk_name] : null;
         if (!$record_ident && $pk) {
             $existing = $table->getRecord($pk);
@@ -86,10 +86,10 @@ class RecordController extends ControllerBase
         } else {
             // Otherwise, create a new one.
             //try {
-                $db->query('BEGIN');
-                $template->record = $table->save_record($_POST, $record_ident);
-                $db->query('COMMIT');
-                $template->add_notice('updated', 'Record saved.');
+            $db->query('BEGIN');
+            $template->record = $table->saveRecord($_POST, $record_ident);
+            $db->query('COMMIT');
+            $template->add_notice('updated', 'Record saved.');
 //            } catch (\Exception $e) {
 //                echo $e->getMessage();
 //                $template->add_notice('error', $e->getMessage());
@@ -97,14 +97,14 @@ class RecordController extends ControllerBase
 //            }
         }
         // Redirect back to the edit form.
-        $return_to = (!empty($_REQUEST['return_to']) ) ? $_REQUEST['return_to'] : 'table/'.$table->getName().'/'.$template->record->getPrimaryKey();
+        $return_to = (!empty($_REQUEST['return_to']) ) ? $_REQUEST['return_to'] : 'table/' . $table->getName() . '/' . $template->record->getPrimaryKey();
         //$this->redirect($return_to);
     }
 
     public function delete($args)
     {
         $db = new Database($this->wpdb);
-        $table = $db->get_table($args['table']);
+        $table = $db->getTable($args['table']);
         $record_ident = isset($args['ident']) ? $args['ident'] : false;
         if (!$record_ident) {
             wp_redirect($table->get_url());

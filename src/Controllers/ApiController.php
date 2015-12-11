@@ -42,7 +42,7 @@ class ApiController extends ControllerBase
     public function table_names()
     {
         $db = new Database($this->wpdb);
-        $tables = $db->get_tables(false);
+        $tables = $db->getTables(false);
         $out = array();
         foreach ($tables as $table) {
             $out[] = array(
@@ -60,7 +60,7 @@ class ApiController extends ControllerBase
     public function app_schema()
     {
         $db = new Database($this->wpdb);
-        $tables = $db->get_tables();
+        $tables = $db->getTables();
         $out = array();
         foreach ($tables as $table) {
             if (Grants::current_user_can(Grants::CREATE, $table->getName())) {
@@ -84,7 +84,7 @@ class ApiController extends ControllerBase
             return array();
         }
         $db = new Database($this->wpdb);
-        $table = $db->get_table($request->get_param('table_name'));
+        $table = $db->getTable($request->get_param('table_name'));
         if (!$table instanceof Table) {
             return array();
         }
@@ -105,7 +105,7 @@ class ApiController extends ControllerBase
     protected function foreign_key_values_build($table, $operator, $term)
     {
         $table->reset_filters();
-        $table->add_filter($table->get_title_column(), $operator, $term);
+        $table->addFilter($table->getTitleColumn(), $operator, $term);
         $out = array();
         foreach ($table->get_records() as $record) {
             $out[$record->getPrimaryKey()] = array(
