@@ -53,7 +53,7 @@ class RecordController extends ControllerBase
         }
         // Don't save to non-updatable views.
         if (!$table->is_updatable()) {
-            $template->add_notice('error', "This table can not be updated.");
+            $template->addNotice('error', "This table can not be updated.");
         }
 
         // Return to URL.
@@ -81,7 +81,7 @@ class RecordController extends ControllerBase
         $pk = (isset($_POST[$pk_name])) ? $_POST[$pk_name] : null;
         if (!$record_ident && $pk) {
             $existing = $table->getRecord($pk);
-            $template->add_notice('updated', "The record identified by '$pk' already exists.");
+            $template->addNotice('updated', "The record identified by '$pk' already exists.");
             $_REQUEST['return_to'] = $existing->get_url();
         } else {
             // Otherwise, create a new one.
@@ -89,7 +89,7 @@ class RecordController extends ControllerBase
             $db->query('BEGIN');
             $template->record = $table->saveRecord($_POST, $record_ident);
             $db->query('COMMIT');
-            $template->add_notice('updated', 'Record saved.');
+            $template->addNotice('updated', 'Record saved.');
 //            } catch (\Exception $e) {
 //                echo $e->getMessage();
 //                $template->add_notice('error', $e->getMessage());
@@ -103,31 +103,30 @@ class RecordController extends ControllerBase
 
     public function delete($args)
     {
-        $db = new Database($this->wpdb);
+        $db = new Database();
         $table = $db->getTable($args['table']);
-        $record_ident = isset($args['ident']) ? $args['ident'] : false;
-        if (!$record_ident) {
-            wp_redirect($table->get_url());
-            exit;
+        $recordIdent = isset($args['ident']) ? $args['ident'] : false;
+        if (!$recordIdent) {
+            $this->redirect($table->get_url());
         }
 
         // Ask for confirmation.
         if (!isset($_POST['confirm_deletion'])) {
             $template = new \Tabulate\Template('record/delete.html');
             $template->table = $table;
-            $template->record = $table->getRecord($record_ident);
+            $template->record = $table->getRecord($recordIdent);
             return $template->render();
         }
 
         // Delete the record.
         try {
             $this->wpdb->query('BEGIN');
-            $table->delete_record($record_ident);
+            $table->delete_record($recordIdent);
             $this->wpdb->query('COMMIT');
         } catch (\Exception $e) {
             $template = $this->getTemplate($table);
-            $template->record = $table->getRecord($record_ident);
-            $template->add_notice('error', $e->getMessage());
+            $template->record = $table->getRecord($recordIdent);
+            $template->addNotice('error', $e->getMessage());
             return $template->render();
         }
 

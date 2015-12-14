@@ -163,66 +163,66 @@ class Table
      * @param string $sql The SQL to modify
      * @return array Parameter values, in the order of their occurence in $sql
      */
-    public function apply_filters(&$sql)
+    public function applyFilters(&$sql)
     {
 
         $params = array();
         $param_num = 1; // Incrementing parameter suffix, to permit duplicate columns.
-        $where_clause = '';
+        $whereClause = '';
         $join_clause = '';
         foreach ($this->filters as $filter) {
-            $f_column = $filter['column'];
-            $param_name = $filter['column'] . $param_num;
+            $filterCol = $filter['column'];
+            $paramName = $filter['column'] . $param_num;
 
             // Filters on foreign keys need to work on the FKs title column.
-            $column = $this->columns[$f_column];
+            $column = $this->columns[$filterCol];
             if ($column->isForeignKey() && !$filter['force']) {
-                $join = $this->join_on($column);
-                $f_column = $join['column_alias'];
+                $join = $this->joinOn($column);
+                $filterCol = $join['column_alias'];
                 $join_clause .= $join['join_clause'];
             } else {
                 // The result of join_on() above is quoted, so this must also be.
-                $f_column = "`" . $this->getName() . "`.`$f_column`";
+                $filterCol = "`" . $this->getName() . "`.`$filterCol`";
             }
 
             // LIKE or NOT LIKE
             if ($filter['operator'] == 'like' || $filter['operator'] == 'not like') {
-                $where_clause .= " AND CONVERT($f_column, CHAR) " . strtoupper($filter['operator']) . " %s ";
-                $params[$param_name] = '%' . trim($filter['value']) . '%';
+                $whereClause .= " AND CONVERT($filterCol, CHAR) " . strtoupper($filter['operator']) . " :$paramName ";
+                $params[$paramName] = '%' . trim($filter['value']) . '%';
             } // Equals or does-not-equal
             elseif ($filter['operator'] == '=' || $filter['operator'] == '!=') {
-                $where_clause .= " AND $f_column " . strtoupper($filter['operator']) . " %s ";
-                $params[$param_name] = trim($filter['value']);
+                $whereClause .= " AND $filterCol " . strtoupper($filter['operator']) . " :$paramName ";
+                $params[$paramName] = trim($filter['value']);
             } // IS EMPTY
             elseif ($filter['operator'] == 'empty') {
-                $where_clause .= " AND ($f_column IS NULL OR $f_column = '')";
+                $whereClause .= " AND ($filterCol IS NULL OR $filterCol = '')";
             } // IS NOT EMPTY
             elseif ($filter['operator'] == 'not empty') {
-                $where_clause .= " AND ($f_column IS NOT NULL AND $f_column != '')";
+                $whereClause .= " AND ($filterCol IS NOT NULL AND $filterCol != '')";
             } // IN or NOT IN
             elseif ($filter['operator'] == 'in' || $filter['operator'] == 'not in') {
                 $values = explode("\n", $filter['value']);
                 $placeholders = array();
-                foreach ($values as $vid => $val) {
-                    $placeholders[] = "%s";
-                    $params[$param_name . '_' . $vid] = trim($val);
+                foreach ($values as $valId => $val) {
+                    $placeholders[] = ':' . $paramName . '_' . $valId;
+                    $params[$paramName . '_' . $valId] = trim($val);
                 }
                 $negate = ( $filter['operator'] == 'not in' ) ? 'NOT' : '';
-                $where_clause .= " AND ($f_column $negate IN (" . join(", ", $placeholders) . "))";
+                $whereClause .= " AND ($filterCol $negate IN (" . join(", ", $placeholders) . "))";
             } // Other operators. They're already validated in $this->addFilter()
             else {
-                $where_clause .= " AND ($f_column " . $filter['operator'] . " %s)";
-                $params[$param_name] = trim($filter['value']);
+                $whereClause .= " AND ($filterCol " . $filter['operator'] . " :$paramName)";
+                $params[$paramName] = trim($filter['value']);
             }
 
             $param_num++;
         } // end foreach filter
         // Add clauses into SQL
-        if (!empty($where_clause)) {
+        if (!empty($whereClause)) {
             $where_clause_pattern = '/^(.* FROM .*?)((?:GROUP|HAVING|ORDER|LIMIT|$).*)$/m';
-            $where_clause = substr($where_clause, 5); // Strip leading ' AND'.
-            $where_clause = "$1 $join_clause WHERE $where_clause $2";
-            $sql = preg_replace($where_clause_pattern, $where_clause, $sql);
+            $whereClause = substr($whereClause, 5); // Strip leading ' AND'.
+            $whereClause = "$1 $join_clause WHERE $whereClause $2";
+            $sql = preg_replace($where_clause_pattern, $whereClause, $sql);
         }
 
         return $params;
@@ -281,12 +281,15 @@ class Table
      * @param \Tabulate\DB\Column $column The FK column
      * @return array Array with 'join_clause' and 'column_alias' keys
      */
-    public function join_on($column)
+    public function joinOn($column)
     {
         $joinClause = '';
         $columnAlias = '`' . $this->getName() . '`.`' . $column->getName() . '`';
         if ($column->isForeignKey()) {
             $fk1Table = $column->getReferencedTable();
+            if (!$fk1Table) {
+                throw new \Exception("Unable to get referenced table of " . $column->getTable()->getName() . '.' . $column->getName());
+            }
             $fk1TitleColumn = $fk1Table->getTitleColumn();
             $joinClause .= ' LEFT OUTER JOIN `' . $fk1Table->getName() . '` AS f' . $this->aliasCount
                     . ' ON (`' . $this->getName() . '`.`' . $column->getName() . '` '
@@ -321,12 +324,12 @@ class Table
         if (false !== $this->get_order_by()) {
             $order_by = $this->getColumn($this->get_order_by());
             if ($order_by) {
-                $order_by_join = $this->join_on($order_by);
+                $order_by_join = $this->joinOn($order_by);
                 $sql .= $order_by_join['join_clause'] . ' ORDER BY ' . $order_by_join['column_alias'] . ' ' . $this->get_order_dir();
             }
         }
 
-        $params = $this->apply_filters($sql);
+        $params = $this->applyFilters($sql);
 
         // Then limit to the ones on the current page.
         if ($with_pagination) {
@@ -554,7 +557,7 @@ class Table
         $join_clause = '';
         foreach ($this->columns as $col_name => $col) {
             if ($col->isForeignKey()) {
-                $col_join = $this->join_on($col);
+                $col_join = $this->joinOn($col);
                 $column_name = $col_join['column_alias'];
                 $join_clause .= $col_join['join_clause'];
             } elseif ($col->get_type() === 'point') {
@@ -572,7 +575,7 @@ class Table
         $sql = 'SELECT ' . join(',', $columns)
                 . ' FROM `' . $this->getName() . '` ' . $join_clause;
 
-        $params = $this->apply_filters($sql);
+        $params = $this->applyFilters($sql);
 
         $filename = get_temp_dir() . uniqid('tabulate_') . '.csv';
         if (DIRECTORY_SEPARATOR == '\\') {
@@ -738,7 +741,7 @@ class Table
      * @param boolean $instantiate Whether to instantiate the Table objects (or just return their names).
      * @return string[]|Table[] The list of <code>column_name => table_name|Table</code> pairs.
      */
-    public function get_referenced_tables($instantiate = false)
+    public function getReferencedTables($instantiate = false)
     {
 
         // Extract the FK info from the CREATE TABLE statement.
@@ -769,13 +772,13 @@ class Table
      *
      * @return array With keys 'table' and 'column'.
      */
-    public function get_referencing_tables()
+    public function getReferencingTables()
     {
         $out = array();
         // For all tables in the Database...
         foreach ($this->getDatabase()->getTables() as $table) {
             // ...get a list of the tables they reference.
-            $foreign_tables = $table->get_referenced_tables();
+            $foreign_tables = $table->getReferencedTables();
             foreach ($foreign_tables as $foreign_column => $referenced_table_name) {
                 // If this table is a referenced table, collect the table from which it's referenced.
                 if ($referenced_table_name === $this->getName()) {
@@ -796,7 +799,7 @@ class Table
      */
     public function get_foreign_key_names()
     {
-        return array_keys($this->get_referenced_tables(false));
+        return array_keys($this->getReferencedTables(false));
     }
 
     /**

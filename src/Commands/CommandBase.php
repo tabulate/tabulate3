@@ -23,7 +23,7 @@ abstract class CommandBase
     {
         if (basename($_SERVER['SCRIPT_NAME']) !== 'tabulate') {
             // Only produce output when running the CLI tool.
-            //return;
+            return;
         }
         echo $message . ($newline ? PHP_EOL : '');
     }

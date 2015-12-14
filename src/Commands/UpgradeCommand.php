@@ -93,45 +93,29 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
 
     protected function installData(\Tabulate\DB\Database $db)
     {
-        // Can't log changes without a user (admin, in this case).
-        // Can't grant permissions without a group (also admin).
-        // ...so after these two have been created, we revert to normal.
-//        $sql = "INSERT IGNORE INTO `users` (`id`,`name`) VALUES (:id1, :name1), (:id2, :name2)";
-//        $params = [
-//            ['id' => Users::ANON, 'name' => 'Anonymous'],
-//            ['id' => Users::ADMIN, 'name' => 'Administrator'],
-//        ];
-//        $db->query($sql, $params);
-//        if (!$db->getTable('users', false)->getRecord(Users::ADMIN)) {
-//            $this->write("Inserting user 'Administrator'");
-//            $db->getTable('users', false)->saveRecord(['id' => Users::ADMIN, 'name' => 'Administrator'], null, false);
-//        }
-//        if (!$db->getTable('groups', false)->getRecord(Groups::ADMINISTRATORS)) {
-//            $this->write("Inserting group 'Administrators'");
-//            $db->getTable('groups', false)->saveRecord(['id' => Groups::ADMINISTRATORS, 'name' => 'Administrators'], null, false);
-//        }
+        $this->write("Confirming existance of administrative user, group, and grant");
+
+        // Can't log changes without a user (admin, in this case). So we create a user manually.
         $db->query("INSERT IGNORE INTO `users` SET `id`=:id, `name`=:name", ['id' => Users::ADMIN, 'name' => 'Administrator']);
+        // Then we want to create a second user (anon), but this time recording changes.
+        // The change-tracker needs to know about permissions, so before creating the 2nd user that we need to grant permission to admin.
+        // Permissions are granted to groups, not users, so we put admin in an admin group (manually).
         $db->query("INSERT IGNORE INTO `groups` SET `id`=:id, `name`=:name", ['id' => Groups::ADMINISTRATORS, 'name' => 'Administrators']);
         $db->query("INSERT IGNORE INTO `group_members` SET `user`=:user, `group`=:group", ['user' => Users::ADMIN, 'group' => Groups::ADMINISTRATORS]);
-
-        // Make sure Administrators can do anything (default is '*' for table and permission).
+        // Now we can grant everything (on everything) to the admin group.
         $db->query("INSERT IGNORE INTO `grants` SET `group`=:group", ['group' => Groups::ADMINISTRATORS]);
-//        $grants = $db->getTable('grants', false);
-//        $grants->addFilter('group', '=', Groups::ADMINISTRATORS);
-//        $grants->addFilter('table_name', '=', '*');
-//        $grants->addFilter('permission', '=', '*');
-//        if ($grants->getRecordCount() === 0) {
-//            $grants->saveRecord(['group' => Groups::ADMINISTRATORS], null, false);
-//        }
+        // And finally 'reset' the DB so it knows about the above new records.
         $db->reset();
+
         // Start tracking changes now that there's a user to attribute it to.
+        $db->setCurrentUser(Users::ADMIN);
         $changeTracker = new \Tabulate\DB\ChangeTracker($db);
         $changeTracker->openChangeset('Installation', true);
 
         // Create remaining default users and groups.
-        if (!$db->getTable('users', false)->getRecord(Users::ANON)) {
+        if (!$db->getTable('users')->getRecord(Users::ANON)) {
             $this->write("Inserting user 'Anonymous'");
-            $db->getTable('users', false)->saveRecord(['id' => Users::ANON, 'name' => 'Anonymous'], null, false);
+            $db->getTable('users')->saveRecord(['id' => Users::ANON, 'name' => 'Anonymous']);
         }
         if (!$db->getTable('groups', false)->getRecord(Groups::GENERAL_PUBLIC)) {
             $this->write("Inserting group 'General Public'");

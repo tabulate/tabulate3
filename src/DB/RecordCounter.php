@@ -48,18 +48,15 @@ class RecordCounter
         }
 
         // Otherwise, run the COUNT() query.
-        $pk_col = $this->table->getPkColumn();
-        if ($pk_col instanceof Column) {
-            $count_col = '`' . $this->table->getName() . '`.`' . $pk_col->getName() . '`';
+        $pkCol = $this->table->getPkColumn();
+        if ($pkCol instanceof Column) {
+            $count_col = '`' . $this->table->getName() . '`.`' . $pkCol->getName() . '`';
         } else {
             $count_col = '*';
         }
         $sql = 'SELECT COUNT(' . $count_col . ') as `count` FROM `' . $this->table->getName() . '`';
-        $params = $this->table->apply_filters($sql);
-        if (!empty($params)) {
-            $sql = $this->table->getDatabase()->query($sql, $params);
-        }
-        $count = $this->table->getDatabase()->query($sql)->fetchColumn();
+        $params = $this->table->applyFilters($sql);
+        $count = $this->table->getDatabase()->query($sql, $params)->fetchColumn();
         if ($canCache) {
             $_SESSION[$this->sessionKey()] = $count;
         }

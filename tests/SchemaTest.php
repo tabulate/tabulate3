@@ -1,33 +1,19 @@
 <?php
 
 use Tabulate\DB\Database;
-use Tabulate\DB\User;
+use Tabulate\DB\Tables\Users;
 
 class SchemaTest extends TestBase
 {
 
-    /**
-     * @testdox Tabulate lists all tables in the database (by default, only for users in the Administrators group).
-     * @test
-     */
-    public function no_access()
+    /** @var Database */
+    protected $db;
+
+    public function setUp()
     {
-        $user = new User();
-        $db = new Database();
-        $db->setUser($user);
-
-        // Make sure they can't see anything yet.
-        $this->assertFalse($user->isAdmin());
-        $this->assertEmpty($db->getTableNames());
-
-        // Now promote them, and try again.
-        $current_user->add_cap('promote_users');
-        $this->assertTrue(current_user_can('promote_users'));
-        $table_names = $this->db->getTableNames();
-        // A WP core table.
-        $this->assertContains($this->wpdb->prefix . 'posts', $table_names);
-        // And one of ours.
-        $this->assertContains('test_table', $table_names);
+        parent::setUp();
+        $this->db = new Database();
+        $this->db->setCurrentUser(Users::ADMIN);
     }
 
     /**
@@ -36,25 +22,15 @@ class SchemaTest extends TestBase
      */
     public function references()
     {
-        // Make sure the user can edit things.
-        global $current_user;
-        $current_user->add_role('administrator');
-        $grants = new Grants();
-        $grants->set(
-                array(
-                    'test_table' => array(Grants::READ => array('administrator'),),
-                )
-        );
-
         // That test_table references test_types
-        $test_table = $this->db->getTable('test_table');
-        $referenced_tables = $test_table->get_referenced_tables(true);
-        $referenced_table = array_pop($referenced_tables);
-        $this->assertEquals('test_types', $referenced_table->getName());
+        $testTable = $this->db->getTable('test_table');
+        $referencedTables = $testTable->getReferencedTables(true);
+        $referencedTable = array_pop($referencedTables);
+        $this->assertEquals('test_types', $referencedTable->getName());
 
         // And the other way around.
         $type_table = $this->db->getTable('test_types');
-        $referencing_tables = $type_table->get_referencing_tables();
+        $referencing_tables = $type_table->getReferencingTables();
         $referencing_table = array_pop($referencing_tables);
         $this->assertEquals('test_table', $referencing_table['table']->getName());
     }
@@ -63,10 +39,10 @@ class SchemaTest extends TestBase
      * @testdox More than one table can reference a table, and even a single table can reference a table more than once.
      * @test
      */
-    public function multiple_references()
+    public function multipleReferences()
     {
-        $this->wpdb->query('DROP TABLE IF EXISTS `test_widgets`');
-        $this->wpdb->query('CREATE TABLE `test_widgets` ('
+        $this->db->query('DROP TABLE IF EXISTS `test_widgets`');
+        $this->db->query('CREATE TABLE `test_widgets` ('
                 . ' id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,'
                 . ' title VARCHAR(100) NOT NULL UNIQUE,'
                 . ' type_1_a INT(10) UNSIGNED,'
@@ -74,36 +50,36 @@ class SchemaTest extends TestBase
                 . ' type_2 INT(10) UNSIGNED'
                 . ');'
         );
-        $this->wpdb->query('DROP TABLE IF EXISTS `test_widget_types_1`');
-        $this->wpdb->query('CREATE TABLE `test_widget_types_1` ('
+        $this->db->query('DROP TABLE IF EXISTS `test_widget_types_1`');
+        $this->db->query('CREATE TABLE `test_widget_types_1` ('
                 . ' id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,'
                 . ' title VARCHAR(100) NOT NULL'
                 . ');'
         );
-        $this->wpdb->query('DROP TABLE IF EXISTS `test_widget_types_2`');
-        $this->wpdb->query('CREATE TABLE `test_widget_types_2` ('
+        $this->db->query('DROP TABLE IF EXISTS `test_widget_types_2`');
+        $this->db->query('CREATE TABLE `test_widget_types_2` ('
                 . ' id INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,'
                 . ' title VARCHAR(100) NOT NULL'
                 . ');'
         );
-        $this->wpdb->query('ALTER TABLE `test_widgets` '
+        $this->db->query('ALTER TABLE `test_widgets` '
                 . ' ADD FOREIGN KEY ( `type_1_a` ) REFERENCES `test_widget_types_1` (`id`),'
                 . ' ADD FOREIGN KEY ( `type_1_b` ) REFERENCES `test_widget_types_1` (`id`),'
                 . ' ADD FOREIGN KEY ( `type_2` ) REFERENCES `test_widget_types_2` (`id`);'
         );
-        $db = new \Tabulate\DB\Database($this->wpdb);
-        $table = $db->getTable('test_widgets');
+        $this->db->reset();
+        $table = $this->db->getTable('test_widgets');
 
         // Check references from Widgets to Types.
-        $referencedTables = $table->get_referenced_tables();
+        $referencedTables = $table->getReferencedTables();
         $this->assertCount(3, $referencedTables);
         $this->assertArrayHasKey('type_1_a', $referencedTables);
         $this->assertArrayHasKey('type_1_b', $referencedTables);
         $this->assertArrayHasKey('type_2', $referencedTables);
 
         // Check references from Types to Widgets.
-        $type1 = $db->getTable('test_widget_types_1');
-        $referencingTables = $type1->get_referencing_tables();
+        $type1 = $this->db->getTable('test_widget_types_1');
+        $referencingTables = $type1->getReferencingTables();
         $this->assertCount(2, $referencingTables);
     }
 
@@ -111,7 +87,7 @@ class SchemaTest extends TestBase
      * @testdox A not-null column "is required" but if it has a default value then no value need be set when saving.
      * @test
      */
-    public function required_columns()
+    public function requiredColumns()
     {
         // 'widget_size' is a not-null column with a default value.
         $test_table = $this->db->getTable('test_table');
@@ -136,16 +112,16 @@ class SchemaTest extends TestBase
      * @testdox Null values can be inserted, and existing values can be updated to be null.
      * @test
      */
-    public function null_values()
+    public function nullValues()
     {
-        $test_table = $this->db->getTable('test_table');
+        $testTable = $this->db->getTable('test_table');
 
         // Start with null.
         $widget = array(
             'title' => 'Test Item',
             'ranking' => null,
         );
-        $record = $test_table->saveRecord($widget);
+        $record = $testTable->saveRecord($widget);
         $this->assertEquals('Test Item', $record->title());
         $this->assertNull($record->ranking());
 
@@ -154,7 +130,7 @@ class SchemaTest extends TestBase
             'title' => 'Test Item',
             'ranking' => 12,
         );
-        $record = $test_table->saveRecord($widget, 1);
+        $record = $testTable->saveRecord($widget, 1);
         $this->assertEquals(12, $record->ranking());
 
         // Then update to null again.
@@ -162,7 +138,7 @@ class SchemaTest extends TestBase
             'title' => 'Test Item',
             'ranking' => null,
         );
-        $record = $test_table->saveRecord($widget, 1);
+        $record = $testTable->saveRecord($widget, 1);
         $this->assertNull($record->ranking());
     }
 
@@ -170,20 +146,20 @@ class SchemaTest extends TestBase
      * @testdox Only NOT NULL text fields are allowed to have empty strings.
      * @test
      */
-    public function empty_string()
+    public function emptyString()
     {
-        $test_table = $this->db->getTable('test_table');
+        $testTable = $this->db->getTable('test_table');
         // Title is NOT NULL.
-        $this->assertTrue($test_table->getColumn('title')->allows_empty_string());
+        $this->assertTrue($testTable->getColumn('title')->allows_empty_string());
         // Description is NULLable.
-        $this->assertFalse($test_table->getColumn('description')->allows_empty_string());
+        $this->assertFalse($testTable->getColumn('description')->allows_empty_string());
 
         // Check with some data.
         $data = array(
             'title' => '',
             'description' => '',
         );
-        $record = $test_table->saveRecord($data);
+        $record = $testTable->saveRecord($data);
         $this->assertSame('', $record->title());
         $this->assertNull($record->description());
     }
@@ -192,7 +168,7 @@ class SchemaTest extends TestBase
      * @testdox Date and time values are saved correctly.
      * @test
      */
-    public function date_and_time()
+    public function dateAndTime()
     {
         $test_table = $this->db->getTable('test_table');
         $rec = $test_table->saveRecord(array(
@@ -208,16 +184,16 @@ class SchemaTest extends TestBase
      * @testdox VARCHAR columns can be used as Primary Keys.
      * @test
      */
-    public function varchar_pk()
+    public function varcharPrimaryKey()
     {
-        $this->wpdb->query('DROP TABLE IF EXISTS `test_varchar_pk`');
-        $this->wpdb->query('CREATE TABLE `test_varchar_pk` ('
+        $this->db->query('DROP TABLE IF EXISTS `test_varchar_pk`');
+        $this->db->query('CREATE TABLE `test_varchar_pk` ('
                 . ' ident VARCHAR(10) PRIMARY KEY,'
                 . ' description TEXT'
                 . ');'
         );
-        $db = new \Tabulate\DB\Database($this->wpdb);
-        $tbl = $db->getTable('test_varchar_pk');
+        $this->db->reset();
+        $tbl = $this->db->getTable('test_varchar_pk');
         $this->assertEquals('ident', $tbl->getPkColumn()->getName());
         $rec = $tbl->saveRecord(array('ident' => 'TEST123'));
         $this->assertEquals('TEST123', $rec->getPrimaryKey());
@@ -238,30 +214,14 @@ class SchemaTest extends TestBase
         $comment = $test_table->getColumn('a_numeric')->get_comment();
         $this->assertEquals('NUMERIC is the same as DECIMAL.', $comment);
     }
-    /**
-     * @testdox A table can have a multi-column primary key.
-     * @test
-     */
-    /* public function multicol_primary_key() {
-      $this->wpdb->query( 'DROP TABLE IF EXISTS `test_multicol_primary_key`' );
-      $this->wpdb->query( 'CREATE TABLE `test_multicol_primary_key` ('
-      . ' ident_a VARCHAR(10),'
-      . ' ident_b VARCHAR(10),'
-      . ' PRIMARY KEY (ident_a, ident_b)'
-      . ');'
-      );
-      $db = new \Tabulate\DB\Database( $this->wpdb );
-      $tbl = $db->get_table( 'test_multicol_primary_key' );
-      var_dump($tbl->get_pk_column()->get_name());
-      } */
 
     /**
      * @link https://github.com/tabulate/tabulate/issues/21
      * @test
      */
-    public function github_21()
+    public function githubIssue21()
     {
-        $this->wpdb->query('DROP TABLE IF EXISTS `test_pb_servicio`');
+        $this->db->query('DROP TABLE IF EXISTS `test_pb_servicio`');
         $sql = "CREATE TABLE IF NOT EXISTS test_pb_servicio (
 			s_id VARCHAR(4) NOT NULL COMMENT 'código identificador del servicio',
 			s_nom VARCHAR(80) NOT NULL COMMENT 'nombre del servicio',
@@ -277,9 +237,9 @@ class SchemaTest extends TestBase
 			)
 			ENGINE InnoDB
 			COMMENT 'producto concertado con un proveedor o proveedores';";
-        $this->wpdb->query($sql);
-        $db = new \Tabulate\DB\Database($this->wpdb);
-        $tbl = $db->getTable('test_pb_servicio');
+        $this->db->query($sql);
+        $this->db->reset();
+        $tbl = $this->db->getTable('test_pb_servicio');
         $this->assertTrue($tbl->getColumn('s_pre')->is_numeric());
         $rec = $tbl->saveRecord(array(
             's_id' => 'TEST',
@@ -298,16 +258,15 @@ class SchemaTest extends TestBase
      * @testdox It should be possible to provide a value for a (non-autoincrementing) PK.
      * @test
      */
-    public function timestamp_pk()
+    public function timestampPrimaryKey()
     {
-        $this->wpdb->query('DROP TABLE IF EXISTS `provided_pk`');
-        $sql = "CREATE TABLE `provided_pk` ( "
+        $this->db->query('DROP TABLE IF EXISTS `provided_pk`');
+         $this->db->query("CREATE TABLE `provided_pk` ( "
                 . "  `code` VARCHAR(10) NOT NULL PRIMARY KEY, "
                 . "  `title` VARCHAR(100) "
-                . ");";
-        $this->wpdb->query($sql);
-        $db = new \Tabulate\DB\Database($this->wpdb);
-        $tbl = $db->getTable('provided_pk');
+                . ");");
+        $this->db->reset();
+        $tbl = $this->db->getTable('provided_pk');
         $rec = $tbl->saveRecord(array('code' => 'TEST'));
         $this->assertEquals('TEST', $rec->getPrimaryKey());
     }

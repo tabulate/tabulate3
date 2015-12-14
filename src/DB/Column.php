@@ -97,7 +97,7 @@ class Column
 
         // Is this a foreign key?
         if (in_array($this->name, $table->get_foreign_key_names())) {
-            $referencedTables = $table->get_referenced_tables(false);
+            $referencedTables = $table->getReferencedTables(false);
             $this->references = $referencedTables[$this->name];
         }
     }
@@ -278,7 +278,6 @@ class Column
      */
     public function getReferencedTable()
     {
-        echo "getting referenced table for " . $this->getTable()->getName() . '.' . $this->getName() . "\n";
         return $this->table->getDatabase()->getTable($this->references);
     }
 

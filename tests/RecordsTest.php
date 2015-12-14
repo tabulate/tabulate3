@@ -123,7 +123,7 @@ class RecordsTest extends TestBase
         // The test_table should know there are 50.
         $test_table = $this->db->getTable('test_table');
         $type_col = $test_table->getColumn('type_id');
-        $referenced_tables = $test_table->get_referenced_tables(true);
+        $referenced_tables = $test_table->getReferencedTables(true);
         $types_referenced = $referenced_tables['type_id'];
         $this->assertNotSame($types_normal, $types_referenced);
         $this->assertCount(0, $types_normal->get_filters());

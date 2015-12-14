@@ -133,25 +133,22 @@ class Database
         if ($tableName instanceof Table) {
             $tableName = $tableName->getName();
         }
-        echo "checking $permission on $tableName ";
         $sql = "SELECT COUNT(*) "
                 . " FROM `grants` "
                 . "   JOIN `groups` ON `groups`.`id` = `grants`.`group` "
                 . "   JOIN `group_members` ON `group_members`.`group` = `groups`.`id`"
                 . " WHERE "
-                . "   (`table_name`='*' OR `table_name` = :table_name) "
-                . "   AND `permission` LIKE :permission "
-                . "   AND `group_members`.`user` = :user ";
+                . "   (`table_name` = '*' OR `table_name` = :table_name) "
+                . "   AND (`permission` ='*' OR `permission` LIKE :permission) "
+                . "   AND (`group_members`.`user` = :user) ";
         $params = ['table_name' => $tableName, 'permission' => $permission, 'user' => $this->currentUserId];
-        $permissions = $this->query($sql, $params)->fetchColumn();
-        $perm = $permissions > 0;
-        echo " = ".$perm."\n";
+        $grantCount = $this->query($sql, $params)->fetchColumn();
+        $perm = $grantCount > 0;
         return $perm;
     }
 
     public function setCurrentUser($userId)
     {
-        echo "changing current user to $userId\n";
         $this->currentUserId = $userId;
     }
 

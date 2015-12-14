@@ -10,5 +10,4 @@ class Groups extends \Tabulate\DB\Table
 
     /** @var string The ID of the General Public group. */
     const GENERAL_PUBLIC = 2;
-
 }

@@ -19,13 +19,7 @@ class InstallTest extends TestBase
 
         // The admin user can see everything.
         $db->setCurrentUser(Users::ADMIN);
-        $this->assertEquals(['users', 'groups', 'changesets'], $db->getTableNames(), '', 0, 1, true, true);
-
-        // Initially we can't see any tables.
-        // Become the Administrator.
-//        $admin = $db->getTable('users', false)->getRecord(Tabulate\DB\Tables\Users::ADMIN);
-//        $db->setCurrentUser($admin->id());
-//        var_dump($admin);
-        //$admin = $db->getTable('users')->getRecord(1);
+        $expectedTables = ['changes', 'changesets', 'grants', 'group_members', 'groups', 'test_table', 'test_types', 'users'];
+        $this->assertEquals($expectedTables, $db->getTableNames(), '', 0, 1, true, true);
     }
 }

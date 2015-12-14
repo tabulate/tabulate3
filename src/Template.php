@@ -9,7 +9,7 @@ class Template
     protected $templateName;
 
     /** @var string */
-    protected $template_string;
+    protected $templateString;
 
     /** @var string[] */
     protected $data;
@@ -18,7 +18,7 @@ class Template
     protected $loader;
 
     /** @var string The name of the transient used to store notices. */
-    protected $transient_notices;
+    protected $transientNotices;
 
     /**
      * Create a new template either with a file-based Twig template, or a Twig string.
@@ -29,9 +29,9 @@ class Template
     public function __construct($templateName = false, $templateString = false)
     {
         $this->templateName = $templateName;
-        $this->template_string = $templateString;
-        $this->transient_notices = 'notices';
-        $notices = isset($_SESSION[$this->transient_notices]) ? $_SESSION[$this->transient_notices] : array();
+        $this->templateString = $templateString;
+        $this->transientNotices = 'notices';
+        $notices = isset($_SESSION[$this->transientNotices]) ? $_SESSION[$this->transientNotices] : array();
         $this->data = array(
             'tabulate_version' => TABULATE_VERSION,
             'notices' => $notices,
@@ -49,7 +49,7 @@ class Template
 
     /**
      * Get the Filesystem template loader.
-     * @return \Twig_Loader_Filesystem 
+     * @return \Twig_Loader_Filesystem
      */
     public function getLoader()
     {
@@ -60,7 +60,7 @@ class Template
      * Get a list of templates in a given directory, across all registered template paths.
      * @param string $directory
      */
-    public function get_templates($directory)
+    public function getTemplates($directory)
     {
         $templates = array();
         foreach ($this->getLoader()->getPaths() as $path) {
@@ -106,13 +106,13 @@ class Template
      * @param string $type Either 'updated' or 'error'.
      * @param string $message The message to display.
      */
-    public function add_notice($type, $message)
+    public function addNotice($type, $message)
     {
         $this->data['notices'][] = array(
             'type' => $type,
             'message' => $message,
         );
-        $_SESSION[$this->transient_notices] = $this->data['notices'];
+        $_SESSION[$this->transientNotices] = $this->data['notices'];
     }
 
     /**
@@ -130,7 +130,7 @@ class Template
      */
     public function render()
     {
-        unset($_SESSION[$this->transient_notices]);
+        unset($_SESSION[$this->transientNotices]);
         $twig = new \Twig_Environment($this->loader);
 
         // Add titlecase filter.
@@ -138,7 +138,7 @@ class Template
         $twig->addFilter($titlecase_filter);
 
         // Add strtolower filter.
-        $strtolower_filter = new \Twig_SimpleFilter('strtolower', function( $str ) {
+        $strtolower_filter = new \Twig_SimpleFilter('strtolower', function ($str) {
             if (is_array($str)) {
                 return array_map('strtolower', $str);
             } else {
@@ -155,8 +155,8 @@ class Template
         }
 
         // Render the template.
-        if (!empty($this->template_string)) {
-            $template = $twig->createTemplate($this->template_string);
+        if (!empty($this->templateString)) {
+            $template = $twig->createTemplate($this->templateString);
         } else {
             $template = $twig->loadTemplate($this->templateName);
         }

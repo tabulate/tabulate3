@@ -42,7 +42,7 @@ class SchemaController extends ControllerBase
             $new_name = $schema->getName();
         }
         $template = new Template('schema.html');
-        $template->add_notice('updated', 'Schema updated.');
+        $template->addNotice('updated', 'Schema updated.');
         $url = admin_url('admin.php?page=tabulate_schema&schema=' . $new_name);
         wp_redirect($url);
     }

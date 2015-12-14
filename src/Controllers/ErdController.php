@@ -26,8 +26,8 @@ class ErdController extends ControllerBase
                     $this->selectedTables[$table->getName()] = $table;
                 }
             } else { // Otherwise, default to all linked tables
-                $referenced = count($table->get_referencing_tables()) > 0;
-                $referencing = count($table->get_referenced_tables()) > 0;
+                $referenced = count($table->getReferencingTables()) > 0;
+                $referencing = count($table->getReferencedTables()) > 0;
                 if ($referenced || $referencing) {
                     $this->selectedTables[$table->getName()] = $table;
                 }

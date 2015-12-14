@@ -76,7 +76,7 @@ class ChangeTracker
     public function beforeSave(Table $table, $data, $pk_value)
     {
         // Don't save changes to the changes tables.
-        if (in_array($table->getName(), $this->tableNames())) {
+        if (in_array($table->getName(), ['changesets', 'changes'])) {
             return false;
         }
 
@@ -92,6 +92,11 @@ class ChangeTracker
         // Don't save changes to the changes tables.
         if (in_array($table->getName(), self::tableNames())) {
             return false;
+        }
+
+        $changesetsTable = $this->db->getTable('changesets', false);
+        if (!$changesetsTable->getRecord(self::$currentChangesetId)) {
+            throw new \Exception("Failed to open changeset #".self::$currentChangesetId.' ('.$changesetsTable->getRecordCount().')');
         }
 
         // Save a change for each changed column.

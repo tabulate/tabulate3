@@ -118,7 +118,7 @@ class TableController extends ControllerBase
         $template->table = $table;
         $template->maxsize = size_format(wp_max_upload_size());
         if (!Grants::current_user_can(Grants::IMPORT, $table->getName())) {
-            $template->add_notice('error', 'You do not have permission to import data into this table.');
+            $template->addNotice('error', 'You do not have permission to import data into this table.');
             return $template->render();
         }
 
@@ -131,7 +131,7 @@ class TableController extends ControllerBase
             $uploaded = isset($_FILES['file']) ? wp_handle_upload($_FILES['file'], array('action' => $template->action)) : false;
             $csv_file = new \Tabulate\CSV($hash, $uploaded);
         } catch (\Exception $e) {
-            $template->add_notice('error', $e->getMessage());
+            $template->addNotice('error', $e->getMessage());
             return $template->render();
         }
 
@@ -179,7 +179,7 @@ class TableController extends ControllerBase
             $this->wpdb->query('BEGIN');
             $result = $csv_file->import_data($table, unserialize(wp_unslash($_POST['columns'])));
             $this->wpdb->query('COMMIT');
-            $template->add_notice('updated', 'Import complete; ' . $result . ' rows imported.');
+            $template->addNotice('updated', 'Import complete; ' . $result . ' rows imported.');
         }
 
         return $template->render();
