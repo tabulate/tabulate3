@@ -47,7 +47,7 @@ class TableController extends ControllerBase
 
         // Filters.
         $filter_param = (isset($args['filter'])) ? $args['filter'] : array();
-        $table->add_filters($filter_param);
+        $table->addFilters($filter_param);
         $filters = $table->get_filters();
         $title_col = $table->getTitleColumn();
         $first_filter = ( $title_col ) ? $title_col->getName() : '';
@@ -238,7 +238,7 @@ class TableController extends ControllerBase
 
         // Filter and export.
         $filter_param = (isset($args['filter'])) ? $args['filter'] : array();
-        $table->add_filters($filter_param);
+        $table->addFilters($filter_param);
         $filename = $table->export();
 
         // Send CSV to client.

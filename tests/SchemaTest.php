@@ -6,16 +6,6 @@ use Tabulate\DB\Tables\Users;
 class SchemaTest extends TestBase
 {
 
-    /** @var Database */
-    protected $db;
-
-    public function setUp()
-    {
-        parent::setUp();
-        $this->db = new Database();
-        $this->db->setCurrentUser(Users::ADMIN);
-    }
-
     /**
      * @testdox Tables can be linked to each other; one is the referenced table, the other the referencing.
      * @test

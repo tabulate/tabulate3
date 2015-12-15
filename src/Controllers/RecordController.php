@@ -121,7 +121,7 @@ class RecordController extends ControllerBase
         // Delete the record.
         try {
             $this->wpdb->query('BEGIN');
-            $table->delete_record($recordIdent);
+            $table->deleteRecord($recordIdent);
             $this->wpdb->query('COMMIT');
         } catch (\Exception $e) {
             $template = $this->getTemplate($table);

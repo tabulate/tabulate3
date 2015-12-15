@@ -10,10 +10,13 @@ class InstallTest extends TestBase
     {
         $db = new Database();
         // Make sure the default records were created.
-        $this->assertEquals(2, $db->getTable('users', false)->getRecordCount());
-        $this->assertEquals(2, $db->getTable('groups', false)->getRecordCount());
+        $db->setCurrentUser(Users::ADMIN);
+        $this->assertEquals(2, $db->getTable('users')->getRecordCount());
+        $this->assertEquals(2, $db->getTable('groups')->getRecordCount());
+        $this->assertEquals(2, $db->getTable('group_members')->getRecordCount());
 
         // The anon user can't see anything.
+        $db->setCurrentUser(Users::ANON);
         $this->assertEquals(Users::ANON, $db->getCurrentUser());
         $this->assertEmpty($db->getTables());
 
@@ -21,5 +24,6 @@ class InstallTest extends TestBase
         $db->setCurrentUser(Users::ADMIN);
         $expectedTables = ['changes', 'changesets', 'grants', 'group_members', 'groups', 'test_table', 'test_types', 'users'];
         $this->assertEquals($expectedTables, $db->getTableNames(), '', 0, 1, true, true);
+
     }
 }

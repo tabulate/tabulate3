@@ -258,7 +258,7 @@ class CSV
             $table->saveRecord($row, $pk_value);
             $count++;
         }
-        $change_tracker->close_changeset();
+        $change_tracker->closeChangeset();
         return $count;
     }
 

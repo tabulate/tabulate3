@@ -132,7 +132,7 @@ class Record
      * Get the value of this Record's title column.
      * @return string
      */
-    public function get_title()
+    public function getTitle()
     {
         $title_col = $this->table->getTitleColumn();
         if ($title_col !== $this->table->getPkColumn()) {
@@ -154,7 +154,7 @@ class Record
      * @param string $column_name
      * @return boolean|\Tabulate\DB\Record
      */
-    public function get_referenced_record($column_name)
+    public function getReferencedRecord($column_name)
     {
         if (!isset($this->data->$column_name)) {
             return false;
@@ -182,21 +182,21 @@ class Record
 
     /**
      * Get most recent changes.
-     * @return array|string
+     * @return \PDOStatement
      */
-    public function get_changes()
+    public function getChanges($lim = 10)
     {
-        $wpdb = $this->table->getDatabase()->get_wpdb();
+        $limit = (int) $lim;
         $sql = "SELECT cs.id AS changeset_id, c.id AS change_id, date_and_time, "
-                . "user_nicename, table_name, record_ident, column_name, old_value, "
+                . "u.name, table_name, record_ident, column_name, old_value, "
                 . "new_value, comment "
-                . "FROM " . ChangeTracker::changes_name() . " c "
-                . "  JOIN " . ChangeTracker::changesets_name() . " cs ON (c.changeset_id=cs.id) "
-                . "  JOIN {$wpdb->prefix}users u ON (u.ID=cs.user_id) "
-                . "WHERE table_name = %s AND record_ident = %s"
+                . "FROM `changes` c "
+                . "  JOIN `changesets` cs ON (c.changeset = cs.id) "
+                . "  JOIN `users` u ON (u.id = cs.user) "
+                . "WHERE table_name = :table AND record_ident = :ident "
                 . "ORDER BY date_and_time DESC, cs.id DESC "
-                . "LIMIT 15 ";
-        $params = array($this->table->getName(), $this->getPrimaryKey());
-        return $wpdb->get_results($wpdb->prepare($sql, $params));
+                . "LIMIT $limit";
+        $params = array('table' => $this->table->getName(), 'ident' => $this->getPrimaryKey());
+        return $this->table->getDatabase()->query($sql, $params)->fetchAll();
     }
 }

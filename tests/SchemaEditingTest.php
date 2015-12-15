@@ -35,13 +35,13 @@ class SchemaEditingTest extends TestBase
         $test_table = $this->db->getTable('test_table');
         $rec1 = $test_table->saveRecord(array('title' => 'Testing'));
         $this->assertEquals(1, $rec1->id());
-        $this->assertCount(4, $rec1->get_changes());
+        $this->assertCount(4, $rec1->getChanges());
 
         // Rename the table, and make sure the history is the same size.
         $test_table->rename('testing_table');
         $testing_table = $this->db->getTable('testing_table');
         $rec2 = $testing_table->getRecord(1);
-        $this->assertCount(4, $rec2->get_changes());
+        $this->assertCount(4, $rec2->getChanges());
     }
 
     public function tearDown()

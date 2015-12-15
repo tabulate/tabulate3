@@ -29,7 +29,7 @@ class MapController extends ControllerBase
 
         // Apply filters.
         $filter_param = (isset($args['filter'])) ? $args['filter'] : array();
-        $this->table->add_filters($filter_param);
+        $this->table->addFilters($filter_param);
         $this->table->addFilter($this->point_col_name, 'not empty', '');
     }
 

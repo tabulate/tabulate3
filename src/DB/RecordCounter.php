@@ -60,7 +60,7 @@ class RecordCounter
         if ($canCache) {
             $_SESSION[$this->sessionKey()] = $count;
         }
-        return $count;
+        return (int) $count;
     }
 
     /**

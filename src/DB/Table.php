@@ -137,7 +137,7 @@ class Table
     /**
      * Add multiple filters.
      */
-    public function add_filters($filters)
+    public function addFilters($filters)
     {
         foreach ($filters as $filter) {
             $column = (isset($filter['column'])) ? $filter['column'] : false;
@@ -152,7 +152,7 @@ class Table
         return $this->filters;
     }
 
-    protected function get_fk_join_clause($table, $alias, $column)
+    protected function getForeignKeyJoinClause($table, $alias, $column)
     {
         return 'LEFT OUTER JOIN `' . $table->getName() . '` AS f' . $alias
                 . ' ON (`' . $this->getName() . '`.`' . $column->getName() . '` '
@@ -549,6 +549,14 @@ class Table
     }
 
     /**
+     * @return \Tabulate\DB\RecordCounter
+     */
+    public function getRecordCounter()
+    {
+        return $this->recordCounter;
+    }
+
+    /**
      * @return string Full filesystem path to resulting temporary file.
      */
     public function export()
@@ -882,30 +890,34 @@ class Table
 
     /**
      * Delete a record and its associated change-tracker records.
-     * @param string $pk_value The value of the primary key of the record to delete.
+     * @param string $pkValue The value of the primary key of the record to delete.
      * @return void
      * @throws Exception When the user doesn't have permission, or any error occurs deleting the record.
      */
-    public function delete_record($pk_value)
+    public function deleteRecord($pkValue)
     {
         // Check permission.
-        if (!Grants::current_user_can(Grants::DELETE, $this->getName())) {
-            throw new Exception('You do not have permission to delete data from this table.');
+        if (!$this->getDatabase()->checkGrant(Grants::DELETE, $this->getName())) {
+            throw new \Exception('You do not have permission to delete data from this table.');
         }
-        $rec = $this->getRecord($pk_value);
-        $wpdb = $this->database->get_wpdb();
-        $wpdb->hide_errors();
-        $del = $wpdb->delete($this->getName(), array($this->getPkColumn()->getName() => $pk_value));
+        $rec = $this->getRecord($pkValue);
+        $pkCol = $this->getPkColumn()->getName();
+        $sql = "DELETE FROM `" . $this->getName() . "` WHERE `$pkCol` = :$pkCol";
+        $del = $this->getDatabase()->query($sql, array($pkCol => $pkValue));
         if (!$del) {
-            throw new Exception($wpdb->last_error);
+            throw new \Exception("Unable to delete " . $this->getName() . " record $pkValue");
         }
-        foreach ($rec->get_changes() as $change) {
-            $where_1 = array('table_name' => $this->getName(), 'record_ident' => $pk_value);
-            $wpdb->delete(ChangeTracker::changes_name(), $where_1);
-            $where_2 = array('id' => $change->changeset_id);
-            $wpdb->delete(ChangeTracker::changesets_name(), $where_2);
+        foreach ($rec->getChanges() as $change) {
+            //$deleteChangesSql = "DELETE FROM `changes` WHERE `table_name` = :table_name AND `record_ident` = :record_ident";
+            //$this->getDatabase()->query($deleteChangesSql, ['table_name' => $this->getName(), 'record_ident' => $pkValue]);
+            $deleteChangesSql = "DELETE FROM `changes` WHERE `id` = :id";
+            $this->getDatabase()->query($deleteChangesSql, ['id' => $change->change_id]);
+            $deleteChangesetsSql = "DELETE FROM `changesets` WHERE `id` = :id";
+            $this->getDatabase()->query($deleteChangesetsSql, ['id' => $change->changeset_id]);
         }
         $this->recordCounter->clear();
+        $this->getDatabase()->getTable('changes')->getRecordCounter()->clear();
+        $this->getDatabase()->getTable('changesets')->getRecordCounter()->clear();
     }
 
     /**
@@ -988,7 +1000,7 @@ class Table
         if (!empty($pkValue)) { // Update?
             // Check permission.
             if (!$this->getDatabase()->checkGrant(Grants::UPDATE, $this->getName())) {
-                throw new Exception('You do not have permission to update data in this table.');
+                throw new \Exception('You do not have permission to update data in this table ' . $this->getName());
             }
             $data[$pkName] = $pkValue;
             $sql = 'UPDATE ' . $this->getName() . " $setClause WHERE `$pkName` = :$pkName;";
@@ -997,7 +1009,7 @@ class Table
         } else { // Or insert?
             // Check permission.
             if (!$this->getDatabase()->checkGrant(Grants::CREATE, $this->getName())) {
-                throw new Exception('You do not have permission to insert records into this table.');
+                throw new \Exception('You do not have permission to insert records into table ' . $this->getName());
             }
             $sql = 'INSERT INTO ' . $this->getName() . ' ' . $setClause . ';';
             $this->database->query($sql, $data);

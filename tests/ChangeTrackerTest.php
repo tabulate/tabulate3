@@ -1,30 +1,12 @@
 <?php
 
 use \Tabulate\DB\ChangeTracker;
-use \Tabulate\DB\Grants;
+use \Tabulate\DB\Tables\Groups;
+use \Tabulate\DB\Tables\Grants;
+use \Tabulate\DB\Tables\Users;
 
 class ChangeTrackerTest extends TestBase
 {
-
-    public function setUp()
-    {
-        parent::setUp();
-        // Let the current user do anything.
-        global $current_user;
-        $current_user->add_cap('promote_users');
-    }
-
-    /**
-     * @testdox Two changeset tables are created on activation.
-     * @test
-     */
-    public function activate()
-    {
-        $changesets = $this->db->getTable($this->wpdb->prefix . TABULATE_SLUG . '_changesets');
-        $this->assertEquals($this->wpdb->prefix . TABULATE_SLUG . '_changesets', $changesets->getName());
-        $changes = $this->db->getTable($this->wpdb->prefix . TABULATE_SLUG . '_changes');
-        $this->assertEquals($this->wpdb->prefix . TABULATE_SLUG . '_changes', $changes->getName());
-    }
 
     /**
      * @testdox Saving a new record creates a changeset and some changes.
@@ -33,37 +15,37 @@ class ChangeTrackerTest extends TestBase
     public function basic()
     {
         // test_table: { id, title }
-        $test_table = $this->db->getTable('test_types');
-        $rec = $test_table->saveRecord(array('title' => 'One'));
+        $testTable = $this->db->getTable('test_types');
+        $rec = $testTable->saveRecord(array('title' => 'One'));
 
         // Initial changeset and changes.
-        $changes1 = $rec->get_changes();
+        $changes1 = $rec->getChanges();
         $this->assertCount(2, $changes1);
         // Check the second change record.
-        $changes1_rec = array_pop($changes1);
-        $this->assertequals('title', $changes1_rec->column_name);
-        $this->assertNull($changes1_rec->old_value);
-        $this->assertEquals('One', $changes1_rec->new_value);
+        $changes1Rec = array_pop($changes1);
+        $this->assertequals('title', $changes1Rec->column_name);
+        $this->assertNull($changes1Rec->old_value);
+        $this->assertEquals('One', $changes1Rec->new_value);
 
         // Modify one value, and inspect the new change record.
-        $rec2 = $test_table->saveRecord(array('title' => 'Two'), $rec->id());
-        $changes2 = $rec2->get_changes();
+        $rec2 = $testTable->saveRecord(array('title' => 'Two'), $rec->id());
+        $changes2 = $rec2->getChanges();
         $this->assertCount(3, $changes2);
-        $changes2_rec = array_shift($changes2);
-        $this->assertequals('title', $changes2_rec->column_name);
-        $this->assertequals('One', $changes2_rec->old_value);
-        $this->assertEquals('Two', $changes2_rec->new_value);
+        $changes2Rec = array_shift($changes2);
+        $this->assertequals('title', $changes2Rec->column_name);
+        $this->assertequals('One', $changes2Rec->old_value);
+        $this->assertEquals('Two', $changes2Rec->new_value);
     }
 
     /**
      * @testdox A changeset can have an associated comment.
      * @test
      */
-    public function changeset_comment()
+    public function changesetComment()
     {
-        $test_types = $this->db->getTable('test_types');
-        $rec = $test_types->saveRecord(array('title' => 'One', 'changeset_comment' => 'Testing.'));
-        $changes = $rec->get_changes();
+        $testTypes = $this->db->getTable('test_types');
+        $rec = $testTypes->saveRecord(array('title' => 'One', 'changeset_comment' => 'Testing.'));
+        $changes = $rec->getChanges();
         $change = array_pop($changes);
         $this->assertEquals("Testing.", $change->comment);
     }
@@ -72,24 +54,16 @@ class ChangeTrackerTest extends TestBase
      * @testdox A user who can only create records in one table can still use the change-tracker (i.e. creating changesets is not influenced by standard grants).
      * @test
      */
-    public function minimal_grants()
+    public function minimalGrants()
     {
-        global $current_user;
-        $current_user->remove_cap('promote_users');
-        $current_user->add_role('subscriber');
-        $grants = new Grants();
-        $grants->set(
-                array(
-                    'test_table' => array(
-                        Grants::READ => array('subscriber'),
-                        Grants::CREATE => array('subscriber'),
-                    ),
-                )
-        );
+        $this->db->setCurrentUser(Users::ANON);
+        $this->db->query("INSERT IGNORE INTO `grants` SET `group`=:group, `table_name`='test_table'", ['group' => Groups::GENERAL_PUBLIC]);
+
         // Assert that the permissions are set as we want them.
-        $this->assertTrue(Grants::current_user_can(Grants::CREATE, 'test_table'));
-        $this->assertFalse(Grants::current_user_can(Grants::CREATE, ChangeTracker::changesets_name()));
-        $this->assertFalse(Grants::current_user_can(Grants::CREATE, ChangeTracker::changes_name()));
+        $this->assertTrue($this->db->checkGrant(Grants::CREATE, 'test_table'));
+        $this->assertFalse($this->db->checkGrant(Grants::CREATE, 'changesets'));
+        $this->assertFalse($this->db->checkGrant(Grants::CREATE, 'changes'));
+
         // Succcessfully save a record.
         $test_table = $this->db->getTable('test_table');
         $rec = $test_table->saveRecord(array('title' => 'One', 'changeset_comment' => 'Testing.'));
@@ -100,7 +74,7 @@ class ChangeTrackerTest extends TestBase
      * @testdox Foreign Keys are tracked by their titles (not their PKs).
      * @test
      */
-    public function fk_titles()
+    public function foreignKeyTitles()
     {
         // Set up data.
         $test_types = $this->db->getTable('test_types');
@@ -108,7 +82,7 @@ class ChangeTrackerTest extends TestBase
         $test_table = $this->db->getTable('test_table');
         $rec = $test_table->saveRecord(array('title' => 'A Record', 'type_id' => $type->id()));
         // Test.
-        $changes = $rec->get_changes();
+        $changes = $rec->getChanges();
         $change = $changes[3];
         $this->assertEquals("type_id", $change->column_name);
         $this->assertEquals("The Type", $change->new_value);
@@ -119,14 +93,22 @@ class ChangeTrackerTest extends TestBase
      */
     public function delete()
     {
-        // Create two, to make sure only one is deleted.
-        $test_types = $this->db->getTable('test_types');
-        $test_types->saveRecord(array('title' => 'First Type'));
-        $test_types->saveRecord(array('title' => 'Second Type'));
-        $this->assertEquals(2, $test_types->getRecordCount());
-        $test_types->delete_record(2);
-        $this->assertEquals(1, $test_types->getRecordCount());
+        $testTypes = $this->db->getTable('test_types');
         $changesets = $this->db->getTable(ChangeTracker::changesets_name());
-        $this->assertEquals(1, $changesets->getRecordCount());
+
+        // Create two, to make sure only one is deleted.
+        $testTypes->saveRecord(array('title' => 'First Type'));
+        $testTypes->saveRecord(array('title' => 'Second Type'));
+
+        // Make sure we've got the right number of changesets (one is from the install process).
+        $this->assertEquals(2, $testTypes->getRecordCount());
+        $this->assertEquals(3, $this->db->query('SELECT COUNT(*) FROM changesets')->fetchColumn());
+        $this->assertEquals(3, $changesets->getRecordCount());
+
+        // Delete a record, and both counts should go down by one.
+        $testTypes->deleteRecord(2);
+        $this->assertEquals(1, $testTypes->getRecordCount());
+        $this->assertEquals(2, $this->db->query('SELECT COUNT(*) FROM changesets')->fetchColumn());
+        $this->assertEquals(2, $changesets->getRecordCount());
     }
 }

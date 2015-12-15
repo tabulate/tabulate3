@@ -78,7 +78,7 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
             $sql = "CREATE TABLE IF NOT EXISTS `changes` (
 			`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 			`changeset` INT(10) UNSIGNED NOT NULL,
-			FOREIGN KEY (`changeset`) REFERENCES `changesets` (`id`),
+			FOREIGN KEY (`changeset`) REFERENCES `changesets` (`id`) ON DELETE CASCADE,
 			`change_type` ENUM('field', 'file', 'foreign_key') NOT NULL DEFAULT 'field',
 			`table_name` TEXT(65) NOT NULL,
 			`record_ident` TEXT(65) NOT NULL,
@@ -122,16 +122,16 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
             $db->getTable('groups', false)->saveRecord(['id' => Groups::GENERAL_PUBLIC, 'name' => 'General Public']);
         }
 
-        // Add Administrator to the Administrators group.
+        // Add Anon user to the General Public group.
         $groupMembers = $db->getTable('group_members', false);
-        $groupMembers->addFilter('group', '=', Groups::ADMINISTRATORS);
-        $groupMembers->addFilter('group', '=', Users::ADMIN);
+        $groupMembers->addFilter('user', '=', Users::ANON);
+        $groupMembers->addFilter('group', '=', Groups::GENERAL_PUBLIC);
         if ($groupMembers->getRecordCount() === 0) {
-            $this->write("Adding user 'Administrator' to group 'Administrators'");
-            $groupMembers->saveRecord(['group' => Groups::ADMINISTRATORS, 'user' => Users::ADMIN]);
+            $this->write("Adding user 'Anonymous' to group 'General Public'");
+            $groupMembers->saveRecord(['group' => Groups::GENERAL_PUBLIC, 'user' => Users::ANON]);
         }
 
         // Finish up.
-        $changeTracker->close_changeset();
+        $changeTracker->closeChangeset();
     }
 }

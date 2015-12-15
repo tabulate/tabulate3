@@ -25,7 +25,7 @@ class Database
 
     public function __construct()
     {
-        $this->currentUserId = Users::ANON;
+        $this->setCurrentUser(Users::ANON);
         if (self::$pdo) {
             return;
         }

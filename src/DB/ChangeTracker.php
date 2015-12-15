@@ -33,7 +33,7 @@ class ChangeTracker
     public function __destruct()
     {
         if (!self::$keepChangesetOpen) {
-            $this->close_changeset();
+            $this->closeChangeset();
         }
     }
 
@@ -48,18 +48,17 @@ class ChangeTracker
             self::$keepChangesetOpen = $keepOpen;
         }
         if (!self::$currentChangesetId) {
+            $sql = "INSERT INTO changesets SET "
+                    . " `date_and_time` = :date_and_time,"
+                    . " `user` = :user,"
+                    . " `comment` = :comment ";
             $data = array(
                 'date_and_time' => date('Y-m-d H:i:s'),
                 'user' => $this->db->getCurrentUser(),
                 'comment' => $comment,
             );
-            $changesetsTable = $this->db->getTable('changesets', false);
-            if ($changesetsTable === false) {
-                var_dump($this->db->getTableNames(false));
-                throw new \Exception("Unable to save changeset");
-            }
-            $changeset = $changesetsTable->saveRecord($data, null, false);
-            self::$currentChangesetId = $changeset->id();
+            $this->db->query($sql, $data);
+            self::$currentChangesetId = $this->db->lastInsertId();
         }
     }
 
@@ -67,8 +66,9 @@ class ChangeTracker
      * Close the current changeset.
      * @return void
      */
-    public function close_changeset()
+    public function closeChangeset()
     {
+        self::$keepChangesetOpen = false;
         self::$currentChangesetId = false;
         $this->currentChangesetComment = null;
     }
@@ -108,9 +108,16 @@ class ChangeTracker
                 // Ignore unchanged columns.
                 continue;
             }
+            $sql = "INSERT INTO changes SET "
+                    . " `changeset` = :changeset, "
+                    . " `change_type` = 'field', "
+                    . " `table_name` = :table_name, "
+                    . " `column_name` = :column_name, "
+                    . " `record_ident` = :record_ident, "
+                    . " `old_value` = :old_value, "
+                    . " `new_value` = :new_value ";
             $data = array(
                 'changeset' => self::$currentChangesetId,
-                'change_type' => 'field',
                 'table_name' => $table->getName(),
                 'column_name' => $column->getName(),
                 'record_ident' => $new_record->getPrimaryKey(),
@@ -118,12 +125,12 @@ class ChangeTracker
                 'new_value' => $new_val,
             );
             // Save the change record.
-            $this->db->getTable('changes', false)->saveRecord($data, null, false);
+            $this->db->query($sql, $data);
         }
 
         // Close the changeset if required.
         if (!self::$keepChangesetOpen) {
-            $this->close_changeset();
+            $this->closeChangeset();
         }
     }
 
