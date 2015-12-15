@@ -135,7 +135,7 @@ class Column
      *
      * @return string The type of this column.
      */
-    public function get_type()
+    public function getType()
     {
         return $this->type;
     }
@@ -192,7 +192,7 @@ class Column
      *
      * @return boolean True if this is the PK, false otherwise.
      */
-    public function is_primary_key()
+    public function isPrimaryKey()
     {
         return $this->is_primary_key;
     }
@@ -202,7 +202,7 @@ class Column
      *
      * @return boolean True if this is a Unique Key, false otherwise.
      */
-    public function is_unique()
+    public function isUnique()
     {
         return $this->is_unique;
     }
@@ -230,10 +230,10 @@ class Column
      * Only NOT NULL text fields are allowed to have empty strings.
      * @return boolean
      */
-    public function allows_empty_string()
+    public function allowsEmptyString()
     {
         $textTypes = array('text', 'varchar', 'char');
-        return (!$this->nullable() ) && in_array($this->get_type(), $textTypes);
+        return (!$this->nullable() ) && in_array($this->getType(), $textTypes);
     }
 
     /**
@@ -244,9 +244,9 @@ class Column
      *
      * @return boolean
      */
-    public function is_boolean()
+    public function isBoolean()
     {
-        return $this->get_type() == 'tinyint' && $this->get_size() === 1;
+        return $this->getType() == 'tinyint' && $this->get_size() === 1;
     }
 
     /**
@@ -254,9 +254,9 @@ class Column
      */
     public function is_numeric()
     {
-        $isInt = substr($this->get_type(), 0, 3) == 'int';
-        $isDecimal = substr($this->get_type(), 0, 7) == 'decimal';
-        $isFloat = substr($this->get_type(), 0, 5) == 'float';
+        $isInt = substr($this->getType(), 0, 3) == 'int';
+        $isDecimal = substr($this->getType(), 0, 7) == 'decimal';
+        $isFloat = substr($this->getType(), 0, 5) == 'float';
         return $isInt || $isDecimal || $isFloat;
     }
 

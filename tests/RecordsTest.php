@@ -34,7 +34,7 @@ class RecordsTest extends TestBase
     public function titles()
     {
         $test_table = $this->db->getTable('test_table');
-        $this->assertEmpty($test_table->get_unique_columns());
+        $this->assertEmpty($test_table->getUniqueColumns());
         $this->assertEquals('id', $test_table->getTitleColumn()->getName());
         $rec = $test_table->saveRecord(array('title' => 'Rec 1', 'description' => 'Lorem ipsum.'));
         $this->assertEquals('[ 1 | Rec 1 | Lorem ipsum. | 1 |  |  |  | 5.60 |  |  ]', $rec->getTitle());

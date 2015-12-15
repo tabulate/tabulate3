@@ -52,7 +52,7 @@ class RecordController extends ControllerBase
             }
         }
         // Don't save to non-updatable views.
-        if (!$table->is_updatable()) {
+        if (!$table->isUpdatable()) {
             $template->addNotice('error', "This table can not be updated.");
         }
 

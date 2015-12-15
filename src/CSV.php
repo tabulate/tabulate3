@@ -175,11 +175,11 @@ class CSV
                     $col_errors[] = 'Required but empty';
                 }
                 // Already exists, and is not an update.
-                if ($column->is_unique() && !$pk_set && $this->value_exists($table, $column, $value)) {
+                if ($column->isUnique() && !$pk_set && $this->value_exists($table, $column, $value)) {
                     $col_errors[] = "Unique value already present: '$value'";
                 }
                 // Too long (if the column has a size and the value is greater than this)
-                if (!$column->isForeignKey() AND ! $column->is_boolean()
+                if (!$column->isForeignKey() AND ! $column->isBoolean()
                         AND $column->get_size() > 0
                         AND strlen($value) > $column->get_size()) {
                     $col_errors[] = 'Value (' . $value . ') too long (maximum length of ' . $column->get_size() . ')';
@@ -192,10 +192,10 @@ class CSV
                     }
                 }
                 // Dates
-                if ($column->get_type() == 'date' AND ! empty($value) AND preg_match('/\d{4}-\d{2}-\d{2}/', $value) !== 1) {
+                if ($column->getType() == 'date' AND ! empty($value) AND preg_match('/\d{4}-\d{2}-\d{2}/', $value) !== 1) {
                     $col_errors[] = 'Value (' . $value . ') not in date format';
                 }
-                if ($column->get_type() == 'year' AND ! empty($value) AND ( $value < 1901 || $value > 2155 )) {
+                if ($column->getType() == 'year' AND ! empty($value) AND ( $value < 1901 || $value > 2155 )) {
                     $col_errors[] = 'Year values must be between 1901 and 2155 (' . $value . ' given)';
                 }
 

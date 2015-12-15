@@ -150,9 +150,9 @@ class SchemaTest extends TestBase
     {
         $testTable = $this->db->getTable('test_table');
         // Title is NOT NULL.
-        $this->assertTrue($testTable->getColumn('title')->allows_empty_string());
+        $this->assertTrue($testTable->getColumn('title')->allowsEmptyString());
         // Description is NULLable.
-        $this->assertFalse($testTable->getColumn('description')->allows_empty_string());
+        $this->assertFalse($testTable->getColumn('description')->allowsEmptyString());
 
         // Check with some data.
         $data = array(
@@ -261,7 +261,7 @@ class SchemaTest extends TestBase
     public function timestampPrimaryKey()
     {
         $this->db->query('DROP TABLE IF EXISTS `provided_pk`');
-         $this->db->query("CREATE TABLE `provided_pk` ( "
+        $this->db->query("CREATE TABLE `provided_pk` ( "
                 . "  `code` VARCHAR(10) NOT NULL PRIMARY KEY, "
                 . "  `title` VARCHAR(100) "
                 . ");");

@@ -2,6 +2,8 @@
 
 namespace Tabulate\DB;
 
+use Tabulate\DB\Tables\Grants;
+
 class Table
 {
 
@@ -24,19 +26,19 @@ class Table
     protected $type;
 
     /** @var string The SQL statement used to create this table. */
-    protected $defining_sql;
+    protected $definingSql;
 
     /** @var string The SQL statement most recently saved by $this->get_records() */
-    protected $saved_sql;
+    protected $savedSql;
 
     /** @var string[] The statement parameters most recently saved by $this->get_records() */
-    protected $saved_parameters;
+    protected $savedParameters;
 
     /** @var \Tabulate\DB\Table[] Array of tables referred to by columns in this one. */
-    protected $referenced_tables;
+    protected $referencedTables;
 
     /** @var string[] The names (only) of tables referenced by columns in this one. */
-    protected $referenced_table_names;
+    protected $referencedTableNames;
 
     /** @var int Each joined table gets a unique alias, based on this. */
     protected $aliasCount = 1;
@@ -70,10 +72,10 @@ class Table
      * @var string|false The name of the column by which to order, or false if
      * no column has been set.
      */
-    protected $order_by = false;
+    protected $orderBy = false;
 
     /** @var string The direction in which results should be ordered. */
-    protected $order_dir = 'ASC';
+    protected $orderDir = 'ASC';
 
     /** @var RecordCounter */
     protected $recordCounter;
@@ -82,7 +84,7 @@ class Table
     protected $currentPageNum = 1;
 
     /** @var integer The number of records to show on each page. */
-    protected $records_per_page = 30;
+    protected $recordsPerPage = 30;
 
     /**
      * Create a new database table object.
@@ -239,7 +241,7 @@ class Table
      */
     public function get_order_by()
     {
-        return $this->order_by;
+        return $this->orderBy;
     }
 
     /**
@@ -249,16 +251,16 @@ class Table
     public function set_order_by($order_by)
     {
         if (in_array($order_by, array_keys($this->columns))) {
-            $this->order_by = $order_by;
+            $this->orderBy = $order_by;
         }
     }
 
     public function get_order_dir()
     {
-        if (empty($this->order_dir)) {
-            $this->order_dir = 'ASC';
+        if (empty($this->orderDir)) {
+            $this->orderDir = 'ASC';
         }
-        return $this->order_dir;
+        return $this->orderDir;
     }
 
     /**
@@ -268,7 +270,7 @@ class Table
     public function set_order_dir($order_dir)
     {
         if (in_array(strtoupper($order_dir), array('ASC', 'DESC'))) {
-            $this->order_dir = $order_dir;
+            $this->orderDir = $order_dir;
         }
     }
 
@@ -333,7 +335,7 @@ class Table
 
         // Then limit to the ones on the current page.
         if ($with_pagination) {
-            $records_per_page = $this->get_records_per_page();
+            $records_per_page = $this->getRecordsPerPage();
             $sql .= ' LIMIT ' . $records_per_page;
             if ($this->page() > 1) {
                 $sql .= ' OFFSET ' . ($records_per_page * ($this->get_current_page_num() - 1));
@@ -349,8 +351,8 @@ class Table
         }
 
         if ($save_sql) {
-            $this->saved_sql = $sql;
-            $this->saved_parameters = $params;
+            $this->savedSql = $sql;
+            $this->savedParameters = $params;
         }
 
         return $records;
@@ -366,21 +368,21 @@ class Table
         $this->currentPageNum = $current_page_num;
     }
 
-    public function get_records_per_page()
+    public function getRecordsPerPage()
     {
-        return $this->records_per_page;
+        return $this->recordsPerPage;
     }
 
     public function set_records_per_page($recordsPerPage)
     {
-        $this->records_per_page = $recordsPerPage;
+        $this->recordsPerPage = $recordsPerPage;
     }
 
     public function get_saved_query()
     {
         return array(
-            'sql' => $this->saved_sql,
-            'parameters' => $this->saved_parameters
+            'sql' => $this->savedSql,
+            'parameters' => $this->savedParameters
         );
     }
 
@@ -393,7 +395,7 @@ class Table
         $select = array();
         $table_name = $this->getName();
         foreach ($this->getColumns() as $col_name => $col) {
-            if ($col->get_type() == 'point') {
+            if ($col->getType() == 'point') {
                 $select[] = "AsText(`$table_name`.`$col_name`) AS `$col_name`";
             } else {
                 $select[] = "`$table_name`.`$col_name`";
@@ -477,7 +479,7 @@ class Table
      * Whether this table is a view.
      * @return boolean
      */
-    public function is_view()
+    public function isView()
     {
         return $this->getType() == self::TYPE_VIEW;
     }
@@ -488,7 +490,7 @@ class Table
      * @todo Implement this.
      * @link https://dev.mysql.com/doc/refman/5.6/en/view-updatability.html
      */
-    public function is_updatable()
+    public function isUpdatable()
     {
         if ($this->isTable()) {
             return true;
@@ -517,9 +519,9 @@ class Table
         return $this->operators;
     }
 
-    public function get_page_count()
+    public function getPageCount()
     {
-        return ceil($this->getRecordCount() / $this->get_records_per_page());
+        return ceil($this->getRecordCount() / $this->getRecordsPerPage());
     }
 
     /**
@@ -560,12 +562,12 @@ class Table
                 $col_join = $this->joinOn($col);
                 $column_name = $col_join['column_alias'];
                 $join_clause .= $col_join['join_clause'];
-            } elseif ($col->get_type() === 'point') {
+            } elseif ($col->getType() === 'point') {
                 $columns[] = "IF(`$this->name`.`$col_name` IS NOT NULL, AsText(`$this->name`.`$col_name`), '') AS `$col_name`";
             } else {
                 $column_name = "`$this->name`.`$col_name`";
             }
-            if ($col->get_type() !== 'point' && isset($column_name)) {
+            if ($col->getType() !== 'point' && isset($column_name)) {
                 $columns[] = "REPLACE(IFNULL($column_name, ''),CONCAT(CHAR(13),CHAR(10)),CHAR(10))"; // 13 = \r and 10 = \n
             }
             $column_headers[] = $col->getTitle();
@@ -634,7 +636,7 @@ class Table
         } else {
             $out = array();
             foreach ($this->getColumns() as $col) {
-                if ($col->get_type() === $type) {
+                if ($col->getType() === $type) {
                     $out[$col->getName()] = $col;
                 }
             }
@@ -646,16 +648,16 @@ class Table
      * Get the table comment text; for views, this returns '(View)'.
      * @return string
      */
-    public function get_comment()
+    public function getComment()
     {
         if (!$this->comment) {
-            $sql = $this->get_defining_sql();
-            $comment_pattern = '/.*\)(?:.*COMMENT[\w=]*\'(.*)\')?/si';
-            preg_match($comment_pattern, $sql, $matches);
+            $sql = $this->getDefiningSql();
+            $commentPattern = '/.*\)(?:.*COMMENT[\w=]*\'(.*)\')?/si';
+            preg_match($commentPattern, $sql, $matches);
             $this->comment = ( isset($matches[1]) ) ? $matches[1] : '';
             $this->comment = str_replace("''", "'", $this->comment);
         }
-        if (empty($this->comment) && $this->is_view()) {
+        if (empty($this->comment) && $this->isView()) {
             $this->comment = '(View)';
         }
         return $this->comment;
@@ -665,11 +667,11 @@ class Table
      * Get a list of all the unique columns in this table.
      * @return \Tabulate\DB\Column[]
      */
-    public function get_unique_columns()
+    public function getUniqueColumns()
     {
         $cols = array();
         foreach ($this->getColumns() as $column) {
-            if ($column->is_unique()) {
+            if ($column->isUnique()) {
                 $cols[] = $column;
             }
         }
@@ -686,7 +688,7 @@ class Table
     {
         // Try to get the first non-PK unique key.
         foreach ($this->getColumns() as $column) {
-            if ($column->is_unique() && !$column->is_primary_key()) {
+            if ($column->isUnique() && !$column->isPrimaryKey()) {
                 return $column;
             }
         }
@@ -701,9 +703,9 @@ class Table
      * @return string The SQL statement used to create this table.
      * @throws Exception If the table or view is not found.
      */
-    public function get_defining_sql()
+    public function getDefiningSql()
     {
-        if (!isset($this->defining_sql)) {
+        if (!isset($this->definingSql)) {
             $defining_sql = $this->database->query("SHOW CREATE TABLE `$this->name`")->fetch();
             if (isset($defining_sql->{'Create Table'})) {
                 $defining_sql = $defining_sql->{'Create Table'};
@@ -714,9 +716,9 @@ class Table
             } else {
                 throw new Exception('Table or view not found: ' . $this->name);
             }
-            $this->defining_sql = $defining_sql;
+            $this->definingSql = $defining_sql;
         }
-        return $this->defining_sql;
+        return $this->definingSql;
     }
 
     /**
@@ -727,7 +729,7 @@ class Table
     public function getPkColumn()
     {
         foreach ($this->getColumns() as $column) {
-            if ($column->is_primary_key()) {
+            if ($column->isPrimaryKey()) {
                 return $column;
             }
         }
@@ -745,26 +747,26 @@ class Table
     {
 
         // Extract the FK info from the CREATE TABLE statement.
-        if (!is_array($this->referenced_tables)) {
-            $this->referenced_table_names = array();
-            $definingSql = $this->get_defining_sql();
+        if (!is_array($this->referencedTables)) {
+            $this->referencedTableNames = array();
+            $definingSql = $this->getDefiningSql();
             $foreignKeyPattern = '|FOREIGN KEY \(`(.*?)`\) REFERENCES `(.*?)`|';
             preg_match_all($foreignKeyPattern, $definingSql, $matches);
             if (isset($matches[1]) && count($matches[1]) > 0) {
                 foreach (array_combine($matches[1], $matches[2]) as $colName => $tabName) {
-                    $this->referenced_table_names[$colName] = $tabName;
+                    $this->referencedTableNames[$colName] = $tabName;
                 }
             }
         }
 
         if ($instantiate) {
-            $this->referenced_tables = array();
-            foreach ($this->referenced_table_names as $refCol => $ref_tab) {
-                $this->referenced_tables[$refCol] = new Table($this->getDatabase(), $ref_tab); // $this->get_database()->get_table( $ref_tab );
+            $this->referencedTables = array();
+            foreach ($this->referencedTableNames as $refCol => $ref_tab) {
+                $this->referencedTables[$refCol] = new Table($this->getDatabase(), $ref_tab); // $this->get_database()->get_table( $ref_tab );
             }
         }
 
-        return ($instantiate) ? $this->referenced_tables : $this->referenced_table_names;
+        return ($instantiate) ? $this->referencedTables : $this->referencedTableNames;
     }
 
     /**
@@ -805,7 +807,7 @@ class Table
     /**
      * Get the database to which this table belongs.
      *
-     * @return Database The database object.
+     * @return \Tabulate\DB\Database The database object.
      */
     public function getDatabase()
     {
@@ -937,28 +939,26 @@ class Table
             }
             $column = $this->getColumn($field);
 
-//            if ($column->is_boolean()) {
-//                // Boolean values.
-//                $zeroValues = array(0, '0', false, 'false', 'FALSE', 'off', 'OFF', 'no', 'NO');
-//                if (( null === $value || '' === $value ) && $column->nullable()) {
-//                    $data[$field] = null;
-//                    $sqlValues[$field] = 'NULL';
-//                } elseif (in_array($value, $zeroValues, true)) {
-//                    $data[$field] = false;
-//                    $sqlValues[$field] = '0';
-//                } else {
-//                    $data[$field] = true;
-//                    $sqlValues[$field] = '1';
-//                }
-//            } elseif (!$column->allows_empty_string() && '' === $value && $column->nullable()) {
-//                // Empty strings.
-//                $data[$field] = null;
-//                $sqlValues[$field] = 'NULL';
-//            } elseif (is_null($value) && $column->nullable()) {
-//                // Nulls.
-//                $data[$field] = null;
-//                $sqlValues[$field] = 'NULL';
-            if ($column->get_type() === 'point') {
+            if ($column->isBoolean()) {
+                // Boolean values.
+                $zeroValues = array(0, '0', false, 'false', 'FALSE', 'off', 'OFF', 'no', 'NO');
+                if (( null === $value || '' === $value ) && $column->nullable()) {
+                    $data[$field] = null;
+                } elseif (in_array($value, $zeroValues, true)) {
+                    $data[$field] = false;
+                } else {
+                    $data[$field] = true;
+                }
+                $sqlValues[$field] = ":$field";
+            } elseif (!$column->allowsEmptyString() && '' === $value && $column->nullable()) {
+                // Empty strings.
+                $data[$field] = null;
+                $sqlValues[$field] = ":$field";
+            } elseif (is_null($value) && $column->nullable()) {
+                // Nulls.
+                $data[$field] = null;
+                $sqlValues[$field] = ":$field";
+            } elseif ($column->getType() === 'point') {
                 // POINT columns.
                 $sqlValues[$field] = "GeomFromText(':$field')";
             } else {
@@ -968,7 +968,7 @@ class Table
         }
 
         // Find the PK.
-        $pk_name = $this->getPkColumn()->getName();
+        $pkName = $this->getPkColumn()->getName();
 
         // Compile SQL for insert and update statements.
         $itemsForSetClause = array();
@@ -978,8 +978,8 @@ class Table
         $setClause = 'SET ' . join(', ', $itemsForSetClause);
 
         // Prevent PK from being set to empty.
-        if (isset($data[$pk_name]) && empty($data[$pk_name])) {
-            unset($data[$pk_name]);
+        if (isset($data[$pkName]) && empty($data[$pkName])) {
+            unset($data[$pkName]);
         }
 
         if ($trackChanges) {
@@ -987,28 +987,26 @@ class Table
         }
         if (!empty($pkValue)) { // Update?
             // Check permission.
-//            if (!Grants::current_user_can(Grants::UPDATE, $this->getName())) {
-//                throw new Exception('You do not have permission to update data in this table.');
-//            }
-            $sql = 'UPDATE ' . $this->getName() . " $setClause WHERE `$pk_name` = :pk_value;";
+            if (!$this->getDatabase()->checkGrant(Grants::UPDATE, $this->getName())) {
+                throw new Exception('You do not have permission to update data in this table.');
+            }
+            $data[$pkName] = $pkValue;
+            $sql = 'UPDATE ' . $this->getName() . " $setClause WHERE `$pkName` = :$pkName;";
             $this->database->query($sql, $data);
-            $newPkValue = (isset($data[$pk_name]) ) ? $data[$pk_name] : $pkValue;
+            $newPkValue = (isset($data[$pkName]) ) ? $data[$pkName] : $pkValue;
         } else { // Or insert?
             // Check permission.
-//            if (!Grants::current_user_can(Grants::CREATE, $this->getName())) {
-//                throw new Exception('You do not have permission to insert records into this table.');
-//            }
+            if (!$this->getDatabase()->checkGrant(Grants::CREATE, $this->getName())) {
+                throw new Exception('You do not have permission to insert records into this table.');
+            }
             $sql = 'INSERT INTO ' . $this->getName() . ' ' . $setClause . ';';
             $this->database->query($sql, $data);
-//            if (!empty($this->database->lastError())) {
-//                throw new \Exception('Unable to create record', $this->database->get_wpdb()->last_error, $sql);
-//            }
             if ($this->getPkColumn()->isAutoIncrement()) {
                 // Use the last insert ID.
                 $newPkValue = $this->database->lastInsertId();
-            } elseif (isset($data[$pk_name])) {
+            } elseif (isset($data[$pkName])) {
                 // Or the PK value provided in the data.
-                $newPkValue = $data[$pk_name];
+                $newPkValue = $data[$pkName];
             } else {
                 // If neither of those work, how can we find out the new PK value?
                 throw new \Exception("Unable to determine the value of the new record's prmary key.");

@@ -43,13 +43,19 @@ class TestBase extends PHPUnit_Framework_TestCase
 
     public function tearDown()
     {
-        // Remove all tables.
         $db = new Tabulate\DB\Database();
+
+        // Close any still-open changeset.
+        $changeTracker = new \Tabulate\DB\ChangeTracker($db);
+        $changeTracker->close_changeset();
+
+        // Remove all tables.
         $db->query('SET FOREIGN_KEY_CHECKS = 0');
         foreach ($db->getTableNames(false) as $tbl) {
             $db->query("DROP TABLE IF EXISTS `$tbl`");
         }
         $db->query('SET FOREIGN_KEY_CHECKS = 1');
+
         parent::tearDown();
     }
 }

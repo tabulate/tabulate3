@@ -73,7 +73,7 @@ class Record
         $col = $this->get_col($name);
 
         // Booleans
-        if ($col->is_boolean()) {
+        if ($col->isBoolean()) {
             // Numbers are fetched from the DB as strings.
             if ($this->data->$name === '1') {
                 return true;
