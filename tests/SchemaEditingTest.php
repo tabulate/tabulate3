@@ -3,25 +3,17 @@
 class SchemaEditingTest extends TestBase
 {
 
-    public function setUp()
-    {
-        parent::setUp();
-        // Let the current user do anything.
-        global $current_user;
-        $current_user->add_cap('promote_users');
-    }
-
     /**
      * @testdox It is possible to rename a table.
      * @test
      */
     public function renameTable()
     {
-        $test_table = $this->db->getTable('test_table');
-        $test_table->rename('testing_table');
-        $testing_table = $this->db->getTable('testing_table');
-        $this->assertEquals('testing_table', $testing_table->getName());
-        $this->assertEquals('testing_table', $test_table->getName());
+        $testTable = $this->db->getTable('test_table');
+        $testTable->rename('testing_table');
+        $testingTable = $this->db->getTable('testing_table');
+        $this->assertEquals('testing_table', $testingTable->getName());
+        $this->assertEquals('testing_table', $testTable->getName());
         $this->assertFalse($this->db->getTable('test_table'));
     }
 
@@ -46,7 +38,7 @@ class SchemaEditingTest extends TestBase
 
     public function tearDown()
     {
-        $this->wpdb->query("DROP TABLE IF EXISTS `testing_table`;");
+        $this->db->query("DROP TABLE IF EXISTS `testing_table`;");
         parent::tearDown();
     }
 }

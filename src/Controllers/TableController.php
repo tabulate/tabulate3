@@ -9,7 +9,7 @@ use \Tabulate\Template;
 class TableController extends ControllerBase
 {
 
-    private function get_table($table_name)
+    private function getTable($table_name)
     {
         $db = new Database();
         $table = $db->getTable($table_name);
@@ -25,7 +25,7 @@ class TableController extends ControllerBase
 
     public function index($args)
     {
-        $table = $this->get_table($args['table']);
+        $table = $this->getTable($args['table']);
         if (!$table instanceof \Tabulate\DB\Table) {
             return $table;
         }
@@ -68,7 +68,7 @@ class TableController extends ControllerBase
         $template->filters = $filters;
         $template->filter_count = count($filters);
         $template->sortable = true;
-        $template->record = $table->get_default_record();
+        $template->record = $table->getDefaultRecord();
         $template->records = $table->get_records();
         $template->record_count = $table->getRecordCount();
         echo $template->render();
@@ -112,12 +112,12 @@ class TableController extends ControllerBase
         $template->stage = 'choose_file';
 
         // First make sure the user is allowed to import data into this table.
-        $table = $this->get_table($args['table']);
-        $template->record = $table->get_default_record();
+        $table = $this->getTable($args['table']);
+        $template->record = $table->getDefaultRecord();
         $template->action = 'import';
         $template->table = $table;
-        $template->maxsize = size_format(wp_max_upload_size());
-        if (!Grants::current_user_can(Grants::IMPORT, $table->getName())) {
+        $template->maxsize = \Tabulate\File::maxUploadSize();
+        if (!$table->getDatabase()->checkGrant(Grants::IMPORT, $table->getName())) {
             $template->addNotice('error', 'You do not have permission to import data into this table.');
             return $template->render();
         }
@@ -125,11 +125,11 @@ class TableController extends ControllerBase
         /*
          * Stage 1 of 4: Uploading.
          */
-        $template->form_action = $table->get_url('import');
+        $template->form_action = $table->getUrl('import');
         try {
             $hash = isset($_GET['hash']) ? $_GET['hash'] : false;
-            $uploaded = isset($_FILES['file']) ? wp_handle_upload($_FILES['file'], array('action' => $template->action)) : false;
-            $csv_file = new \Tabulate\CSV($hash, $uploaded);
+            $uploaded = isset($_FILES['file']) ? $_FILES['file'] : false;
+            $csvFile = new \Tabulate\CSV($hash, $uploaded);
         } catch (\Exception $e) {
             $template->addNotice('error', $e->getMessage());
             return $template->render();
@@ -138,16 +138,16 @@ class TableController extends ControllerBase
         /*
          * Stage 2 of 4: Matching fields
          */
-        if ($csv_file->loaded()) {
-            $template->file = $csv_file;
+        if ($csvFile->loaded()) {
+            $template->file = $csvFile;
             $template->stage = $template->stages[1];
-            $template->form_action .= "&hash=" . $csv_file->hash;
+            $template->form_action .= "&hash=" . $csvFile->hash;
         }
 
         /*
          * Stage 3 of 4: Previewing
          */
-        if ($csv_file->loaded() AND isset($_POST['preview'])) {
+        if ($csvFile->loaded() AND isset($_POST['preview'])) {
             $template->stage = $template->stages[2];
             $template->columns = serialize($_POST['columns']);
             $errors = array();
@@ -157,8 +157,8 @@ class TableController extends ControllerBase
                 // done in the CSV class. Missing columns don't matter if importing
                 // existing records.
                 $missing = empty($_POST['columns'][$col->getName()]);
-                $pk_present = isset($_POST['columns'][$table->getPkColumn()->getName()]);
-                if (!$pk_present && $col->is_required() && $missing) {
+                $pkPresent = isset($_POST['columns'][$table->getPkColumn()->getName()]);
+                if (!$pkPresent && $col->is_required() && $missing) {
                     $errors[] = array(
                         'column_name' => '',
                         'column_number' => '',
@@ -168,16 +168,16 @@ class TableController extends ControllerBase
                     );
                 }
             }
-            $template->errors = empty($errors) ? $csv_file->match_fields($table, wp_unslash($_POST['columns'])) : $errors;
+            $template->errors = empty($errors) ? $csvFile->matchFields($table, wp_unslash($_POST['columns'])) : $errors;
         }
 
         /*
          * Stage 4 of 4: Import
          */
-        if ($csv_file->loaded() AND isset($_POST['import'])) {
+        if ($csvFile->loaded() && isset($_POST['import'])) {
             $template->stage = $template->stages[3];
             $this->wpdb->query('BEGIN');
-            $result = $csv_file->import_data($table, unserialize(wp_unslash($_POST['columns'])));
+            $result = $csvFile->importData($table, unserialize($_POST['columns']));
             $this->wpdb->query('COMMIT');
             $template->addNotice('updated', 'Import complete; ' . $result . ' rows imported.');
         }
@@ -192,11 +192,11 @@ class TableController extends ControllerBase
         $monthNum = (isset($args['month'])) ? $args['month'] : date('m');
 
         $template = new \Tabulate\Template('calendar.html');
-        $table = $this->get_table($args['table']);
+        $table = $this->getTable($args['table']);
 
         $template->table = $table;
         $template->action = 'calendar';
-        $template->record = $table->get_default_record();
+        $template->record = $table->getDefaultRecord();
 
         $factory = new \CalendR\Calendar();
         $template->weekdays = $factory->getWeek(new \DateTime('Monday this week'));
@@ -234,7 +234,7 @@ class TableController extends ControllerBase
     public function export($args)
     {
         // Get database and table.
-        $table = $this->get_table($args['table']);
+        $table = $this->getTable($args['table']);
 
         // Filter and export.
         $filter_param = (isset($args['filter'])) ? $args['filter'] : array();
@@ -253,7 +253,7 @@ class TableController extends ControllerBase
 
     public function timeline($args)
     {
-        $table = $this->get_table($args['table']);
+        $table = $this->getTable($args['table']);
         $template = new \Tabulate\Template('timeline.html');
         $template->action = 'timeline';
         $template->table = $table;

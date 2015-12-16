@@ -2,6 +2,7 @@
 
 namespace Tabulate\DB;
 
+use Tabulate\Config;
 use Tabulate\DB\Tables\Grants;
 
 class Table
@@ -431,7 +432,7 @@ class Table
      *
      * @return Record
      */
-    public function get_default_record()
+    public function getDefaultRecord()
     {
         $row = array();
         foreach ($this->getColumns() as $col) {
@@ -563,22 +564,22 @@ class Table
     {
 
         $columns = array();
-        $column_headers = array();
+        $columnHeaders = array();
         $join_clause = '';
         foreach ($this->columns as $col_name => $col) {
             if ($col->isForeignKey()) {
-                $col_join = $this->joinOn($col);
-                $column_name = $col_join['column_alias'];
-                $join_clause .= $col_join['join_clause'];
+                $colJoin = $this->joinOn($col);
+                $columnName = $colJoin['column_alias'];
+                $join_clause .= $colJoin['join_clause'];
             } elseif ($col->getType() === 'point') {
                 $columns[] = "IF(`$this->name`.`$col_name` IS NOT NULL, AsText(`$this->name`.`$col_name`), '') AS `$col_name`";
             } else {
-                $column_name = "`$this->name`.`$col_name`";
+                $columnName = "`$this->name`.`$col_name`";
             }
-            if ($col->getType() !== 'point' && isset($column_name)) {
-                $columns[] = "REPLACE(IFNULL($column_name, ''),CONCAT(CHAR(13),CHAR(10)),CHAR(10))"; // 13 = \r and 10 = \n
+            if ($col->getType() !== 'point' && isset($columnName)) {
+                $columns[] = "REPLACE(IFNULL($columnName, ''),CONCAT(CHAR(13),CHAR(10)),CHAR(10))"; // 13 = \r and 10 = \n
             }
-            $column_headers[] = $col->getTitle();
+            $columnHeaders[] = $col->getTitle();
         }
 
         // Build basic SELECT statement
@@ -587,7 +588,8 @@ class Table
 
         $params = $this->applyFilters($sql);
 
-        $filename = get_temp_dir() . uniqid('tabulate_') . '.csv';
+        $tmpDir = Config::storageDirTmp('export');
+        $filename = $tmpDir . '/' . uniqid() . '.csv';
         if (DIRECTORY_SEPARATOR == '\\') {
             // Clean Windows slashes, for MySQL's benefit.
             $filename = str_replace('\\', '/', $filename);
@@ -597,26 +599,20 @@ class Table
             unlink($filename);
         }
         // Build the final SQL, appending the column headers in a UNION.
-        $sql = 'SELECT "' . join('", "', $column_headers) . '"'
+        $sql = 'SELECT "' . join('", "', $columnHeaders) . '"'
                 . ' UNION ' . $sql
                 . ' INTO OUTFILE "' . $filename . '" '
                 . ' FIELDS TERMINATED BY ","'
                 . ' ENCLOSED BY \'"\''
                 . ' ESCAPED BY \'"\''
                 . ' LINES TERMINATED BY "\r\n"';
-        // Execute the SQL (hiding errors for now).
-        $wpdb = $this->database->get_wpdb();
-        if (!empty($params)) {
-            $sql = $wpdb->prepare($sql, $params);
-        }
-        $wpdb->hide_errors();
-        $wpdb->query($sql);
+        // Execute the SQL.
+        $this->database->query($sql, $params);
         // Make sure it exported.
         if (!file_exists($filename)) {
             $msg = "Unable to create temporary export file:<br /><code>$filename</code>";
-            Exception::wp_die($msg, 'Export failed', $wpdb->last_error, $sql); // WPCS: XSS OK.
+            throw new \Exception($msg);
         }
-        $wpdb->show_errors();
         // Give the filename back to the controller, to send to the client.
         return $filename;
     }
@@ -908,8 +904,6 @@ class Table
             throw new \Exception("Unable to delete " . $this->getName() . " record $pkValue");
         }
         foreach ($rec->getChanges() as $change) {
-            //$deleteChangesSql = "DELETE FROM `changes` WHERE `table_name` = :table_name AND `record_ident` = :record_ident";
-            //$this->getDatabase()->query($deleteChangesSql, ['table_name' => $this->getName(), 'record_ident' => $pkValue]);
             $deleteChangesSql = "DELETE FROM `changes` WHERE `id` = :id";
             $this->getDatabase()->query($deleteChangesSql, ['id' => $change->change_id]);
             $deleteChangesetsSql = "DELETE FROM `changesets` WHERE `id` = :id";
@@ -972,7 +966,7 @@ class Table
                 $sqlValues[$field] = ":$field";
             } elseif ($column->getType() === 'point') {
                 // POINT columns.
-                $sqlValues[$field] = "GeomFromText(':$field')";
+                $sqlValues[$field] = "GeomFromText(:$field)";
             } else {
                 // Everything else.
                 $sqlValues[$field] = ":$field";
@@ -1047,7 +1041,7 @@ class Table
      * @param string   $controller Which controller to use ('table', 'record', etc.).
      * @return string  The full URL.
      */
-    public function get_url($action = 'index', $extra_params = false, $controller = 'table')
+    public function getUrl($action = 'index', $extra_params = false, $controller = 'table')
     {
         $params = array(
             'page' => 'tabulate',
@@ -1068,18 +1062,17 @@ class Table
     public function rename($new_name)
     {
         if ($this->getDatabase()->getTable($new_name)) {
-            throw new Exception("Table '$new_name' already exists");
+            throw new \Exception("Table '$new_name' already exists");
         }
-        $wpdb = $this->getDatabase()->get_wpdb();
         $old_name = $this->getName();
-        $wpdb->query("RENAME TABLE `$old_name` TO `$new_name`;");
+        $this->getDatabase()->query("RENAME TABLE `$old_name` TO `$new_name`;");
         $this->getDatabase()->reset();
         $new = $this->getDatabase()->getTable($new_name, false);
         if (!$new) {
-            throw new Exception("Table '$old_name' was not renamed to '$new_name'");
+            throw new \Exception("Table '$old_name' was not renamed to '$new_name'");
         }
         $this->name = $new->getName();
-        $wpdb->query("UPDATE `" . ChangeTracker::changes_name() . "`"
+        $this->getDatabase()->query("UPDATE `" . ChangeTracker::changes_name() . "`"
                 . " SET `table_name` = '$new_name' "
                 . " WHERE `table_name` = '$old_name';");
     }

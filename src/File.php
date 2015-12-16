@@ -21,4 +21,24 @@ class File
         }
         rmdir($dir);
     }
+
+    public static function maxUploadSize()
+    {
+        $u_bytes = self::convertHrToBytes(ini_get('upload_max_filesize'));
+        $p_bytes = self::convertHrToBytes(ini_get('post_max_size'));
+        return min($u_bytes, $p_bytes);
+    }
+
+    public static function convertHrToBytes($size)
+    {
+        $size = strtolower($size);
+        $bytes = (int) $size;
+        if (strpos($size, 'k') !== false)
+            $bytes = intval($size) * 1024;
+        elseif (strpos($size, 'm') !== false)
+            $bytes = intval($size) * 1024 * 1024;
+        elseif (strpos($size, 'g') !== false)
+            $bytes = intval($size) * 1024 * 1024 * 1024;
+        return $bytes;
+    }
 }

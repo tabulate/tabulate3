@@ -5,14 +5,6 @@ use \Tabulate\DB\Reports;
 class ReportsTest extends TestBase
 {
 
-    public function setUp()
-    {
-        parent::setUp();
-        // Let the current user do anything.
-        global $current_user;
-        $current_user->add_cap('promote_users');
-    }
-
     /**
      * @testdox The Reports system uses two database tables, which are created on activation.
      * @test

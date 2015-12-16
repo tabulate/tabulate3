@@ -41,7 +41,7 @@ class RecordController extends ControllerBase
 //            }
         }
         if (!isset($template->record) || $template->record === false) {
-            $template->record = $table->get_default_record();
+            $template->record = $table->getDefaultRecord();
             // Check permission.
 //            if (!Grants::current_user_can(Grants::CREATE, $table->getName())) {
 //                $template->add_notice('error', 'You do not have permission to create records in this table.');
@@ -107,7 +107,7 @@ class RecordController extends ControllerBase
         $table = $db->getTable($args['table']);
         $recordIdent = isset($args['ident']) ? $args['ident'] : false;
         if (!$recordIdent) {
-            $this->redirect($table->get_url());
+            $this->redirect($table->getUrl());
         }
 
         // Ask for confirmation.
@@ -130,7 +130,7 @@ class RecordController extends ControllerBase
             return $template->render();
         }
 
-        wp_redirect($table->get_url());
+        wp_redirect($table->getUrl());
         exit;
     }
 }

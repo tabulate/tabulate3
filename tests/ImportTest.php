@@ -1,24 +1,18 @@
 <?php
 
+use Tabulate\Config;
+
 class ImportTest extends TestBase
 {
-
-    public function setUp()
-    {
-        parent::setUp();
-        // Let the current user do anything.
-        global $current_user;
-        $current_user->add_cap('promote_users');
-    }
 
     /**
      * Save some CSV data to a file, and create a quasi-$_FILES entry for it.
      * @param string $data
      * @return string|array
      */
-    private function save_data_file($data)
+    private function saveDataFile($data)
     {
-        $test_filename = get_temp_dir() . '/test_' . uniqid() . '.csv';
+        $test_filename = Config::storageDirTmp('test') . '/' . uniqid() . '.csv';
         file_put_contents($test_filename, $data);
         $uploaded = array(
             'type' => 'text/csv',
@@ -31,34 +25,33 @@ class ImportTest extends TestBase
      * @testdox Rows can be imported from CSV.
      * @test
      */
-    public function basic_import()
+    public function basicImport()
     {
         $testtypes_table = $this->db->getTable('test_types');
         $csv = '"ID","Title"' . "\r\n"
                 . '"1","One"' . "\r\n"
                 . '"2","Two"' . "\r\n";
-        $uploaded = $this->save_data_file($csv);
+        $uploaded = $this->saveDataFile($csv);
         $csv = new \Tabulate\CSV(null, $uploaded);
-        $csv->load_data();
+        $csv->loadData();
         $column_map = array('title' => 'Title');
-        $csv->import_data($testtypes_table, $column_map);
+        $csv->importData($testtypes_table, $column_map);
         // Make sure 2 records were imported.
         $this->assertEquals(2, $testtypes_table->getRecordCount());
         $rec1 = $testtypes_table->getRecord(1);
         $this->assertEquals('One', $rec1->title());
-        // And that 1 changeset was created, with 4 changes.
-        $change_tracker = new \Tabulate\DB\ChangeTracker($this->wpdb);
-        $sql = "SELECT COUNT(id) FROM " . $change_tracker->changesets_name();
-        $this->assertEquals(1, $this->wpdb->get_var($sql));
-        $sql = "SELECT COUNT(id) FROM " . $change_tracker->changes_name();
-        $this->assertEquals(4, $this->wpdb->get_var($sql));
+        // And that 1 changeset was created, with 4 changes. 1 changeset is from install-time.
+        $sql = "SELECT COUNT(`id`) FROM `changesets`";
+        $this->assertEquals(2, $this->db->query($sql)->fetchColumn());
+        $sql = "SELECT COUNT(`id`) FROM `changes` WHERE `table_name` = 'test_types'";
+        $this->assertEquals(4, $this->db->query($sql)->fetchColumn());
     }
 
     /**
      * @testdox Import rows that specify an existing PK will update existing records.
      * @test
      */
-    public function primary_key()
+    public function primaryKey()
     {
         $testtable = $this->db->getTable('test_table');
         $rec1 = $testtable->saveRecord(array('title' => 'PK Test'));
@@ -68,11 +61,11 @@ class ImportTest extends TestBase
         // Add a field's value.
         $csv = '"ID","Title","Description"' . "\r\n"
                 . '"1","One","A description"' . "\r\n";
-        $uploaded = $this->save_data_file($csv);
+        $uploaded = $this->saveDataFile($csv);
         $csv = new \Tabulate\CSV(null, $uploaded);
-        $csv->load_data();
+        $csv->loadData();
         $column_map = array('id' => 'ID', 'title' => 'Title', 'description' => 'Description');
-        $csv->import_data($testtable, $column_map);
+        $csv->importData($testtable, $column_map);
         // Make sure there's still only one record, and that it's been updated.
         $this->assertEquals(1, $testtable->getRecordCount());
         $rec2 = $testtable->getRecord(1);
@@ -82,11 +75,11 @@ class ImportTest extends TestBase
         // Leave out a required field.
         $csv = '"ID","Description"' . "\r\n"
                 . '"1","New description"' . "\r\n";
-        $uploaded2 = $this->save_data_file($csv);
+        $uploaded2 = $this->saveDataFile($csv);
         $csv2 = new \Tabulate\CSV(null, $uploaded2);
-        $csv2->load_data();
+        $csv2->loadData();
         $column_map2 = array('id' => 'ID', 'description' => 'Description');
-        $csv2->import_data($testtable, $column_map2);
+        $csv2->importData($testtable, $column_map2);
         // Make sure there's still only one record, and that it's been updated.
         $this->assertEquals(1, $testtable->getRecordCount());
         $rec3 = $testtable->getRecord(1);

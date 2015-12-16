@@ -30,28 +30,27 @@ class CSV
      * exception.
      *
      * @param string $hash The hash of an in-progress import.
-     * @param array $uploaded The result of wp_handle_upload().
+     * @param array $uploaded The untouched 
      */
     public function __construct($hash = false, $uploaded = false)
     {
         if ($uploaded) {
-            $this->save_file($uploaded);
+            $this->saveFile($uploaded);
         }
 
         if (!empty($hash)) {
             $this->hash = $hash;
         }
 
-        $this->load_data();
+        $this->loadData();
     }
 
     /**
      * Check the (already-handled) upload and rename the uploaded file.
-     * @see wp_handle_upload()
      * @param array $uploaded
      * @throws \Exception
      */
-    private function save_file($uploaded)
+    private function saveFile($uploaded)
     {
         if (isset($uploaded['error'])) {
             throw new \Exception($uploaded['error']);
@@ -61,7 +60,7 @@ class CSV
             throw new \Exception('Only CSV files can be imported.');
         }
         $this->hash = md5(time());
-        rename($uploaded['file'], get_temp_dir() . '/' . $this->hash);
+        rename($uploaded['file'], Config::storageDirTmp('import') . '/' . $this->hash);
     }
 
     /**
@@ -70,12 +69,12 @@ class CSV
      * @return void
      * @throws \Exception If the hash-identified file doesn't exist.
      */
-    public function load_data()
+    public function loadData()
     {
         if (!$this->hash) {
             return;
         }
-        $file_path = get_temp_dir() . '/' . $this->hash;
+        $file_path = Config::storageDirTmp('import') . '/' . $this->hash;
         if (!file_exists($file_path)) {
             throw new \Exception("No import was found with the identifier &lsquo;$this->hash&rsquo;");
         }
@@ -98,7 +97,7 @@ class CSV
      * 
      * @return integer The number of rows.
      */
-    public function row_count()
+    public function rowCount()
     {
         return count($this->data);
     }
@@ -147,7 +146,7 @@ class CSV
      * @param array $column_map
      * @return array Array of error messages.
      */
-    public function match_fields($table, $column_map)
+    public function matchFields($table, $column_map)
     {
         // First get the indexes of the headers, including the PK if it's there.
         $heads = $this->remap($column_map);
@@ -161,7 +160,7 @@ class CSV
 
         // Collect all errors.
         $errors = array();
-        for ($row_num = 1; $row_num <= $this->row_count(); $row_num++) {
+        for ($row_num = 1; $row_num <= $this->rowCount(); $row_num++) {
             $pk_set = isset($this->data[$row_num][$pk_col_num]);
             foreach ($this->data[$row_num] as $col_num => $value) {
                 if (!isset($heads[$col_num])) {
@@ -221,21 +220,20 @@ class CSV
      * @param array $column_map array of DB names to import names.
      * @return integer The number of rows imported.
      */
-    public function import_data($table, $column_map)
+    public function importData($table, $column_map)
     {
-        global $wpdb;
-        $change_tracker = new \Tabulate\DB\ChangeTracker($wpdb);
-        $change_tracker->openChangeset('CSV import.', true);
+        $changeTracker = new \Tabulate\DB\ChangeTracker($table->getDatabase());
+        $changeTracker->openChangeset('CSV import.', true);
         $count = 0;
         $headers = $this->remap($column_map);
-        for ($row_num = 1; $row_num <= $this->row_count(); $row_num++) {
+        for ($rowNum = 1; $rowNum <= $this->rowCount(); $rowNum++) {
             $row = array();
-            foreach ($this->data[$row_num] as $col_num => $value) {
-                if (!isset($headers[$col_num])) {
+            foreach ($this->data[$rowNum] as $colNum => $value) {
+                if (!isset($headers[$colNum])) {
                     continue;
                 }
-                $db_column_name = $headers[$col_num];
-                $column = $table->getColumn($db_column_name);
+                $dbColumnName = $headers[$colNum];
+                $column = $table->getColumn($dbColumnName);
 
                 // Get actual foreign key value
                 if ($column->isForeignKey()) {
@@ -250,7 +248,7 @@ class CSV
                 }
 
                 // All other values are used as they are
-                $row[$db_column_name] = $value;
+                $row[$dbColumnName] = $value;
             }
 
             $pk_name = $table->getPkColumn()->getName();
@@ -258,7 +256,7 @@ class CSV
             $table->saveRecord($row, $pk_value);
             $count++;
         }
-        $change_tracker->closeChangeset();
+        $changeTracker->closeChangeset();
         return $count;
     }
 
@@ -277,7 +275,7 @@ class CSV
     {
         $foreign_table = $column->getReferencedTable();
         if (!$this->get_fk_rows($foreign_table, $value)) {
-            $link = '<a href="' . $foreign_table->get_url() . '" title="Opens in a new tab or window" target="_blank" >'
+            $link = '<a href="' . $foreign_table->getUrl() . '" title="Opens in a new tab or window" target="_blank" >'
                     . $foreign_table->getTitle()
                     . '</a>';
             return "Value <code>$value</code> not found in $link";

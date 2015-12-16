@@ -9,15 +9,11 @@ class ExportTest extends TestBase
      */
     public function basic_export()
     {
-        // Let the current user do anything.
-        global $current_user;
-        $current_user->add_cap('promote_users');
-
         // Add some data to the table.
-        $test_table = $this->db->getTable('test_types');
-        $test_table->saveRecord(array('title' => 'One'));
-        $test_table->saveRecord(array('title' => 'Two'));
-        $filename = $test_table->export();
+        $testTable = $this->db->getTable('test_types');
+        $testTable->saveRecord(array('title' => 'One'));
+        $testTable->saveRecord(array('title' => 'Two'));
+        $filename = $testTable->export();
         $this->assertFileExists($filename);
         $csv = '"ID","Title"' . "\r\n"
                 . '"1","One"' . "\r\n"
@@ -31,25 +27,25 @@ class ExportTest extends TestBase
      */
     public function point_wkt()
     {
-        $this->wpdb->query('DROP TABLE IF EXISTS `point_export_test`');
-        $this->wpdb->query('CREATE TABLE `point_export_test` ('
+        $this->db->query('DROP TABLE IF EXISTS `point_export_test`');
+        $this->db->query('CREATE TABLE `point_export_test` ('
                 . ' id INT(10) AUTO_INCREMENT PRIMARY KEY,'
                 . ' title VARCHAR(100) NOT NULL,'
                 . ' geo_loc POINT NULL DEFAULT NULL'
                 . ');'
         );
-        $db = new \Tabulate\DB\Database($this->wpdb);
-        $test_table = $db->getTable('point_export_test');
-        $test_table->saveRecord(array('title' => 'Test', 'geo_loc' => 'POINT(10.1 20.2)'));
-        $filename = $test_table->export();
+        $this->db->reset();
+        $testTable = $this->db->getTable('point_export_test');
+        $testTable->saveRecord(array('title' => 'Test', 'geo_loc' => 'POINT(10.1 20.2)'));
+        $filename = $testTable->export();
         $this->assertFileExists($filename);
         $csv = '"ID","Title","Geo Loc"' . "\r\n"
                 . '"1","Test","POINT(10.1 20.2)"' . "\r\n";
         $this->assertEquals($csv, file_get_contents($filename));
 
         // Check nullable.
-        $test_table->saveRecord(array('title' => 'Test 2', 'geo_loc' => null));
-        $filename2 = $test_table->export();
+        $testTable->saveRecord(array('title' => 'Test 2', 'geo_loc' => null));
+        $filename2 = $testTable->export();
         $this->assertFileExists($filename2);
         $csv2 = '"ID","Title","Geo Loc"' . "\r\n"
                 . '"1","Test","POINT(10.1 20.2)"' . "\r\n"
