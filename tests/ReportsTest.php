@@ -21,7 +21,7 @@ class ReportsTest extends TestBase
      * @testdox On activation, a default report is created that lists all reports. Its ID is 1.
      * @test
      */
-    public function default_report()
+    public function defaultReport()
     {
         $reports = new Reports($this->db);
         $default = $reports->get_template(1);
@@ -78,7 +78,7 @@ class ReportsTest extends TestBase
      * @testdox A report's Template inherits  the report's `file_extension`, `mime_type`, and `title` attributes.
      * @test
      */
-    public function file_extension()
+    public function fileExtension()
     {
         $reportsTable = $this->db->getTable(Reports::reports_table_name());
         $reports = new Reports($this->db);
