@@ -9,16 +9,13 @@ use \Tabulate\Template;
 class TableController extends ControllerBase
 {
 
-    private function getTable($table_name)
+    private function getTable($tableName)
     {
         $db = new Database();
-        $table = $db->getTable($table_name);
+        $table = $db->getTable($tableName);
         if (!$table) {
-            add_action('admin_notices', function($table_name) use ($table_name) {
-                echo "<div class='error'><p>Table '" . $table_name . "' not found.</p></div>";
-            });
-            $home = new HomeController($this->wpdb);
-            return $home->index();
+            http_response_code(404);
+            throw new \Exception("Table '" . $tableName . "' not found.", 404);
         }
         return $table;
     }

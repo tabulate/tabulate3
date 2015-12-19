@@ -2,6 +2,10 @@
 
 namespace Tabulate;
 
+/**
+ * @property string $controller The (lowercase) name of the current controller.
+ * @property \Tabulate\DB\Table $table The current table.
+ */
 class Template
 {
 
