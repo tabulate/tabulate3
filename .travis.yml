@@ -10,7 +10,7 @@ before_script:
 
 install:
   - composer install
-  - echo "<?php \$databaseName='tabulate';\$databaseUser='root';\$debug=true;" > $TRAVIS_BUILD_DIR/tests/config.php
+  - echo "<?php \$databaseName='tabulate';\$databaseUser='root';\$debug=true;\$storageDirExport=sys_get_temp_dir();" > $TRAVIS_BUILD_DIR/tests/config.php
 
 script:
   - phpunit
