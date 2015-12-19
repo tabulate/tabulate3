@@ -5,6 +5,7 @@ namespace Tabulate;
 /**
  * @property string $controller The (lowercase) name of the current controller.
  * @property \Tabulate\DB\Table $table The current table.
+ * @property \Tabulate\DB\Table[] $tables The full list of tables.
  */
 class Template
 {
