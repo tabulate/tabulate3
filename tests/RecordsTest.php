@@ -113,23 +113,23 @@ class RecordsTest extends TestBase
         $this->assertEquals(50, $typesNormal->getRecordCount());
 
         // The test_table should know there are 50.
-        $test_table = $this->db->getTable('test_table');
-        $type_col = $test_table->getColumn('type_id');
-        $referenced_tables = $test_table->getReferencedTables(true);
-        $types_referenced = $referenced_tables['type_id'];
-        $this->assertNotSame($typesNormal, $types_referenced);
+        $testTable = $this->db->getTable('test_table');
+        $typeCol = $testTable->getColumn('type_id');
+        $referencedTables = $testTable->getReferencedTables(true);
+        $typesReferenced = $referencedTables['type_id'];
+        $this->assertNotSame($typesNormal, $typesReferenced);
         $this->assertCount(0, $typesNormal->get_filters());
-        $this->assertCount(0, $types_referenced->get_filters());
+        $this->assertCount(0, $typesReferenced->get_filters());
         $this->assertEquals(50, $typesNormal->getRecordCount());
-        $this->assertEquals(50, $types_referenced->getRecordCount());
-        $this->assertEquals(50, $type_col->getReferencedTable()->getRecordCount());
+        $this->assertEquals(50, $typesReferenced->getRecordCount());
+        $this->assertEquals(50, $typeCol->getReferencedTable()->getRecordCount());
 
         // Now apply a filter to the test_types table.
         $typesNormal->addFilter('title', 'like', '20');
         $this->assertCount(1, $typesNormal->get_filters());
-        $this->assertCount(0, $types_referenced->get_filters());
+        $this->assertCount(0, $typesReferenced->get_filters());
         $this->assertEquals(1, $typesNormal->getRecordCount());
-        $this->assertEquals(50, $types_referenced->getRecordCount());
-        $this->assertEquals(1, $type_col->getReferencedTable()->getRecordCount());
+        $this->assertEquals(50, $typesReferenced->getRecordCount());
+        $this->assertEquals(1, $typeCol->getReferencedTable()->getRecordCount());
     }
 }

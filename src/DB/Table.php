@@ -766,7 +766,7 @@ class Table
         if ($instantiate) {
             $this->referencedTables = array();
             foreach ($this->referencedTableNames as $refCol => $refTab) {
-                $this->referencedTables[$refCol] = $this->get_database()->get_table($refTab);
+                $this->referencedTables[$refCol] = new Table($this->getDatabase(), $refTab);
             }
         }
 
