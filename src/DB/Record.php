@@ -175,9 +175,9 @@ class Record
      */
     public function get_referencing_records($foreign_table, $foreign_column, $with_pagination = true)
     {
-        $foreign_table->reset_filters();
+        $foreign_table->resetFilters();
         $foreign_table->addFilter($foreign_column, '=', $this->getPrimaryKey(), true);
-        return $foreign_table->get_records($with_pagination);
+        return $foreign_table->getRecords($with_pagination);
     }
 
     /**

@@ -112,7 +112,9 @@ class Template
             'type' => $type,
             'message' => $message,
         );
-        $_SESSION[$this->transientNotices] = $this->data['notices'];
+        if (isset($_SESSION)) {
+            $_SESSION[$this->transientNotices] = $this->data['notices'];
+        }
     }
 
     /**
@@ -130,7 +132,9 @@ class Template
      */
     public function render()
     {
-        unset($_SESSION[$this->transientNotices]);
+        if (isset($_SESSION[$this->transientNotices])) {
+            unset($_SESSION[$this->transientNotices]);
+        }
         $twig = new \Twig_Environment($this->loader);
 
         // Add titlecase filter.

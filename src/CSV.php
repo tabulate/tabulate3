@@ -174,7 +174,7 @@ class CSV
                     $col_errors[] = 'Required but empty';
                 }
                 // Already exists, and is not an update.
-                if ($column->isUnique() && !$pk_set && $this->value_exists($table, $column, $value)) {
+                if ($column->isUnique() && !$pk_set && $this->valueExists($table, $column, $value)) {
                     $col_errors[] = "Unique value already present: '$value'";
                 }
                 // Too long (if the column has a size and the value is greater than this)
@@ -185,7 +185,7 @@ class CSV
                 }
                 // Invalid foreign key value
                 if (!empty($value) AND $column->isForeignKey()) {
-                    $err = $this->validate_foreign_key($column, $col_num, $row_num, $value);
+                    $err = $this->validateForeignKey($column, $col_num, $row_num, $value);
                     if ($err) {
                         $col_errors[] = $err;
                     }
@@ -241,7 +241,7 @@ class CSV
                         // Ignore empty-string FKs.
                         continue;
                     } else {
-                        $fk_rows = $this->get_fk_rows($column->getReferencedTable(), $value);
+                        $fk_rows = $this->getRecordsByTitle($column->getReferencedTable(), $value);
                         $foreign_row = array_shift($fk_rows);
                         $value = $foreign_row->getPrimaryKey();
                     }
@@ -271,10 +271,10 @@ class CSV
      * @return FALSE if the value is valid
      * @return array error array if the value is not valid
      */
-    protected function validate_foreign_key($column, $col_num, $row_num, $value)
+    protected function validateForeignKey($column, $col_num, $row_num, $value)
     {
         $foreign_table = $column->getReferencedTable();
-        if (!$this->get_fk_rows($foreign_table, $value)) {
+        if (!$this->getRecordsByTitle($foreign_table, $value)) {
             $link = '<a href="' . $foreign_table->getUrl() . '" title="Opens in a new tab or window" target="_blank" >'
                     . $foreign_table->getTitle()
                     . '</a>';
@@ -287,15 +287,15 @@ class CSV
      * Get the rows of a foreign table where the title column equals a given
      * value.
      * 
-     * @param DB\Table $foreign_table
+     * @param DB\Table $table
      * @param string $value The value to match against the title column.
      * @return Database_Result
      */
-    protected function get_fk_rows($foreign_table, $value)
+    protected function getRecordsByTitle($table, $value)
     {
-        $foreign_table->reset_filters();
-        $foreign_table->addFilter($foreign_table->getTitleColumn()->getName(), '=', $value);
-        return $foreign_table->get_records();
+        $table->resetFilters();
+        $table->addFilter($table->getTitleColumn()->getName(), '=', $value);
+        return $table->getRecords();
     }
 
     /**
@@ -304,7 +304,7 @@ class CSV
      * @param DB\Column $column
      * @param mixed $value
      */
-    protected function value_exists($table, $column, $value)
+    protected function valueExists($table, $column, $value)
     {
         $wpdb = $table->getDatabase()->get_wpdb();
         $sql = 'SELECT 1 FROM `' . $table->getName() . '` '

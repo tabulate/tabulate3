@@ -93,7 +93,7 @@ class SchemaTest extends TestBase
         );
         $test_table->saveRecord($widget);
         $this->assertEquals(1, $test_table->getRecordCount());
-        $widget_records = $test_table->get_records();
+        $widget_records = $test_table->getRecords();
         $widget_record = array_shift($widget_records);
         $this->assertEquals(5.6, $widget_record->widget_size());
     }

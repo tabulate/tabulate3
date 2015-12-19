@@ -11,7 +11,7 @@ class TestBase extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         parent::setUp();
-        \Eloquent\Asplode\Asplode::install();
+        require_once __DIR__.'/../bootstrap.php';
 
         // Install.
         $upgrade = new \Tabulate\Commands\UpgradeCommand();

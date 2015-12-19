@@ -69,7 +69,7 @@ class TableController extends ControllerBase
         $template->filter_count = count($filters);
         $template->sortable = true;
         $template->record = $table->getDefaultRecord();
-        $template->records = $table->get_records();
+        $template->records = $table->getRecords();
         $template->record_count = $table->getRecordCount();
         echo $template->render();
     }
@@ -208,7 +208,7 @@ class TableController extends ControllerBase
             // Filter to the just the requested month.
             $table->addFilter($dateColName, '>=', $month->getBegin()->format('Y-m-d'));
             $table->addFilter($dateColName, '<=', $month->getEnd()->format('Y-m-d'));
-            foreach ($table->get_records() as $rec) {
+            foreach ($table->getRecords() as $rec) {
                 $dateVal = $rec->$dateColName();
                 // Initialise the day's list of records.
                 if (!isset($records[$dateVal])) {
@@ -270,7 +270,7 @@ class TableController extends ControllerBase
         $template->end_date = $end_date->format('Y-m-d');
         $template->date_period = $date_period;
         $data = array();
-        foreach ($table->get_records(false) as $record) {
+        foreach ($table->getRecords(false) as $record) {
             if (!isset($data[$record->getTitle()])) {
                 $data[$record->getTitle()] = array();
             }

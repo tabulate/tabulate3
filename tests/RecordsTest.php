@@ -61,16 +61,16 @@ class RecordsTest extends TestBase
         // Make sure it still works with filters applied.
         $testTable->addFilter('title', 'like', 'Record');
         $this->assertEquals(50, $testTable->getRecordCount());
-        $testTable->reset_filters();
+        $testTable->resetFilters();
         $testTable->addFilter('description', 'like', 'Testing');
         $this->assertEquals(1, $testTable->getRecordCount());
-        $testTable->reset_filters();
+        $testTable->resetFilters();
         $testTable->addFilter('description', 'not empty', '');
         $this->assertEquals(1, $testTable->getRecordCount());
-        $testTable->reset_filters();
+        $testTable->resetFilters();
         $testTable->addFilter('description', 'empty', '');
         $this->assertEquals(52, $testTable->getRecordCount());
-        $testTable->reset_filters();
+        $testTable->resetFilters();
 
         // Delete a record.
         $testTable->deleteRecord($rec1->id());

@@ -104,10 +104,10 @@ class ApiController extends ControllerBase
      */
     protected function foreign_key_values_build($table, $operator, $term)
     {
-        $table->reset_filters();
+        $table->resetFilters();
         $table->addFilter($table->getTitleColumn(), $operator, $term);
         $out = array();
-        foreach ($table->get_records() as $record) {
+        foreach ($table->getRecords() as $record) {
             $out[$record->getPrimaryKey()] = array(
                 'value' => $record->getPrimaryKey(),
                 'label' => $record->getTitle(),

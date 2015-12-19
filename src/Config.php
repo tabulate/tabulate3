@@ -69,6 +69,18 @@ class Config
         return self::storageDir('storageDirData', 'data', $subdir);
     }
 
+    /**
+     * Get the full path to the directory used to store temporary export files.
+     * This is a separate configuration variable to the storageDirTmp variable
+     * because on some systems MySQL will only be allowed to write to some
+     * preconfigured directories.
+     * @return string The full filesystem path to the export directory.
+     */
+    public static function storageDirExport()
+    {
+        return self::get('storageDirExport', self::storageDirTmp('export'));
+    }
+
     public static function storageDirTmp($subdir = '')
     {
         return self::storageDir('storageDirTmp', 'tmp', $subdir);

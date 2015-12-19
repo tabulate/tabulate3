@@ -11,23 +11,23 @@ class ReportsTest extends TestBase
      */
     public function activate()
     {
-        $reports = $this->db->getTable(Reports::reports_table_name());
-        $this->assertEquals($this->wpdb->prefix . TABULATE_SLUG . '_reports', $reports->getName());
-        $reportSources = $this->db->getTable(Reports::report_sources_table_name());
-        $this->assertEquals($this->wpdb->prefix . TABULATE_SLUG . '_report_sources', $reportSources->getName());
+        $reports = $this->db->getTable(Reports::reportsTableName());
+        $this->assertEquals('reports', $reports->getName());
+        $reportSources = $this->db->getTable(Reports::reportSourcesTableName());
+        $this->assertEquals('report_sources', $reportSources->getName());
     }
 
     /**
      * @testdox On activation, a default report is created that lists all reports. Its ID is 1.
      * @test
      */
-    public function default_report()
+    public function defaultReport()
     {
         $reports = new Reports($this->db);
         $default = $reports->get_template(1);
         $this->assertEquals('Reports', $default->title);
         $default_html = "<dl>\n"
-                . "  <dt><a href='%Swp-admin/admin.php?page=tabulate&amp;controller=reports&amp;id=1'>Reports</a></dt>\n"
+                . "  <dt><a href='/reports/1'>Reports</a></dt>\n"
                 . "  <dd>List of all Reports.</dd>\n"
                 . "</dl>";
         $this->assertStringMatchesFormat($default_html, $default->render());
@@ -39,7 +39,7 @@ class ReportsTest extends TestBase
      */
     public function template()
     {
-        $reportsTable = $this->db->getTable(Reports::reports_table_name());
+        $reportsTable = $this->db->getTable(Reports::reportsTableName());
         $report = $reportsTable->saveRecord(array(
             'title' => 'Test Report',
             'template' => 'Lorem ipsum.',
@@ -58,12 +58,12 @@ class ReportsTest extends TestBase
      */
     public function sources()
     {
-        $reportsTable = $this->db->getTable(Reports::reports_table_name());
+        $reportsTable = $this->db->getTable(Reports::reportsTableName());
         $report = $reportsTable->saveRecord(array(
             'title' => 'Test Report',
             'template' => 'Today is {{dates.0.date}}'
         ));
-        $reportSourcesTable = $this->db->getTable(Reports::report_sources_table_name());
+        $reportSourcesTable = $this->db->getTable(Reports::reportSourcesTableName());
         $reportSourcesTable->saveRecord(array(
             'report' => $report->id(),
             'name' => 'dates',
@@ -78,9 +78,9 @@ class ReportsTest extends TestBase
      * @testdox A report's Template inherits  the report's `file_extension`, `mime_type`, and `title` attributes.
      * @test
      */
-    public function file_extension()
+    public function fileExtension()
     {
-        $reportsTable = $this->db->getTable(Reports::reports_table_name());
+        $reportsTable = $this->db->getTable(Reports::reportsTableName());
         $reports = new Reports($this->db);
 
         // 1. No file_extension attribute is set, but the others are.

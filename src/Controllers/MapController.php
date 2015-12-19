@@ -47,7 +47,7 @@ class MapController extends ControllerBase
         $osm->addAttribute('version', '0.6');
         $osm->addAttribute('generator', $this->byline());
         $id = -1;
-        foreach ($this->table->get_records(false) as $record) {
+        foreach ($this->table->getRecords(false) as $record) {
             $geom = \geoPHP::load($record->{$this->point_col_name}());
             $node = $osm->addChild('node');
             $node->addAttribute('id', $id);
@@ -81,7 +81,7 @@ class MapController extends ControllerBase
         $kml = new \SimpleXMLElement('<kml />');
         $kml->addAttribute('xmlns', 'http://www.opengis.net/kml/2.2');
         $kml_doc = $kml->addChild('Document');
-        foreach ($this->table->get_records(false) as $record) {
+        foreach ($this->table->getRecords(false) as $record) {
             $placemark = $kml_doc->addChild('Placemark');
             $placemark->addChild('name', $record->getTitle());
             $placemark->addChild('description', htmlentities('<a href="' . $record->get_url() . '">View record.</a>'));
@@ -103,7 +103,7 @@ class MapController extends ControllerBase
         $gpx->addAttribute('version', '1.1');
         $gpx->addAttribute('xmlns', 'http://www.topografix.com/GPX/1/1');
         $gpx->addAttribute('creator', $this->byline());
-        foreach ($this->table->get_records(false) as $record) {
+        foreach ($this->table->getRecords(false) as $record) {
             $geom = \geoPHP::load($record->{$this->point_col_name}());
             $wpt = $gpx->addChild('wpt');
             $wpt->addAttribute('lat', $geom->getY());

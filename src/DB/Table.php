@@ -318,7 +318,7 @@ class Table
      * @param boolean $save_sql Whether to store the SQL for later use.
      * @return \Tabulate\DB\Record[]
      */
-    public function get_records($with_pagination = true, $save_sql = false)
+    public function getRecords($with_pagination = true, $save_sql = false)
     {
         // Build basic SELECT statement.
         $sql = 'SELECT ' . $this->columnsSqlSelect() . ' FROM `' . $this->getName() . '`';
@@ -588,7 +588,7 @@ class Table
 
         $params = $this->applyFilters($sql);
 
-        $tmpDir = Config::storageDirTmp('export');
+        $tmpDir = Config::storageDirExport();
         $filename = $tmpDir . '/' . uniqid() . '.csv';
         if (DIRECTORY_SEPARATOR == '\\') {
             // Clean Windows slashes, for MySQL's benefit.
@@ -879,7 +879,7 @@ class Table
      *
      * @return void
      */
-    public function reset_filters()
+    public function resetFilters()
     {
         $this->filters = array();
     }
