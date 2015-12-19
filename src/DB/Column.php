@@ -344,4 +344,15 @@ class Column
         $size = ($this->size > 0) ? "($this->size)" : '';
         return $this->name . ' ' . strtoupper($this->type) . $size . $pk . $auto . $ref;
     }
+
+    public function toXml()
+    {
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        $colElement = $dom->createElement('column');
+        $dom->appendChild($colElement);
+        $name = $dom->createElement('name');
+        $name->appendChild($dom->createTextNode($this->name));
+        $colElement->appendChild($name);
+        return $colElement;
+    }
 }

@@ -686,7 +686,7 @@ class Table
      * Get the first unique-keyed column.
      * If there is no unique non-PK column then just use the PK.
      *
-     * @return \Tabulate\DB\Column
+     * @return \Tabulate\DB\Column|false The PK column, of false if there isn't one (e.g. a multi-column PK).
      */
     public function getTitleColumn()
     {
@@ -765,8 +765,8 @@ class Table
 
         if ($instantiate) {
             $this->referencedTables = array();
-            foreach ($this->referencedTableNames as $refCol => $ref_tab) {
-                $this->referencedTables[$refCol] = new Table($this->getDatabase(), $ref_tab); // $this->get_database()->get_table( $ref_tab );
+            foreach ($this->referencedTableNames as $refCol => $refTab) {
+                $this->referencedTables[$refCol] = $this->get_database()->get_table($refTab);
             }
         }
 
@@ -843,7 +843,7 @@ class Table
      *
      * @return DOMElement The XML 'table' node.
      */
-    public function to_xml()
+    public function toXml()
     {
         $dom = new DOMDocument('1.0', 'UTF-8');
         $table = $dom->createElement('table');
@@ -988,7 +988,7 @@ class Table
             unset($data[$pkName]);
         }
 
-        if ($trackChanges) {
+        if (isset($changeTracker)) {
             $changeTracker->beforeSave($this, $data, $pkValue);
         }
         if (!empty($pkValue)) { // Update?
@@ -1024,7 +1024,7 @@ class Table
         }
 
         // Save the changes.
-        if ($trackChanges) {
+        if (isset($changeTracker)) {
             $changeTracker->after_save($this, $newRecord);
         }
 
@@ -1052,7 +1052,7 @@ class Table
         if (is_array($extra_params)) {
             $params = array_merge($_GET, $params, $extra_params);
         }
-        return \Tabulate\Config::baseUrl() . '/table/' . $this->getName() . '?' . http_build_query($params);
+        return Config::baseUrl() . '/table/' . $this->getName() . '?' . http_build_query($params);
     }
 
     /**
