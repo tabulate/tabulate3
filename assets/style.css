@@ -84,7 +84,7 @@ form.tabulate-schema .save { margin:1em 0 }
 .form-signin {
     max-width: 330px;
     padding: 15px;
-    margin: 0 auto;
+    margin:0;
 }
 .form-signin .form-signin-heading,
 .form-signin .checkbox {margin-bottom:10px }

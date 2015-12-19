@@ -9,6 +9,10 @@
 <p><a href="{{pngUrl}}"><img src="{{pngUrl}}" alt="ERD" class="img-responsive" /></a></p>
 {% endif %}
 
+{% if not tables %}
+<p class="alert alert-warning">No tables to display.</p>
+
+{% else %}
 <p><a name="display"></a></p>
 <h2>Change displayed tables</h2>
 <form action="{{baseurl}}/erd" method="get">
@@ -23,8 +27,9 @@
 	{% endfor %}
 </ol>
 <p>
-	<input type="submit" value="Show only the selected tables" />
+	<input type="submit" value="Show only the selected tables" class="btn btn-default" />
 </p>
-</form
+</form>
+{% endif %}
 
 {% endblock %}
