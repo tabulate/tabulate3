@@ -14,4 +14,3 @@ install:
 
 script:
   - phpunit
-  - phpcs --report=full --standard=PSR2 src tests
