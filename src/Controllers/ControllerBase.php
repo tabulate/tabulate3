@@ -10,6 +10,9 @@ abstract class ControllerBase
     /** @var \Tabulate\DB\User */
     protected $user;
 
+    /** @var \Tabulate\DB\Database */
+    protected $db;
+
     public function __construct()
     {
         $this->db = new Database();

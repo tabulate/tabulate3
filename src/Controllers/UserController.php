@@ -2,7 +2,7 @@
 
 namespace Tabulate\Controllers;
 
-class UserController extends \Tabulate\Controllers\ControllerBase
+class UserController extends ControllerBase
 {
 
     public function loginForm()

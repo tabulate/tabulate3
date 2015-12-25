@@ -16,9 +16,8 @@ class ErdController extends ControllerBase
     public function __construct()
     {
         parent::__construct();
-        $db = new \Tabulate\DB\Database();
         $this->selectedTables = array();
-        foreach ($db->getTables() as $table) {
+        foreach ($this->db->getTables() as $table) {
             $this->tables[] = $table;
             // If any tables are requested, only show them
             if (isset($_GET['tables']) && count($_GET['tables']) > 0) {

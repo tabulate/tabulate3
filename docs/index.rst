@@ -1,25 +1,46 @@
-.. Tabulate documentation master file, created by
-   sphinx-quickstart on Fri Dec 25 05:46:03 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. |--| unicode:: U+2013   .. en dash
+.. |---| unicode:: U+2014  .. em dash, trimming surrounding whitespace
+   :trim:
 
-Welcome to Tabulate's documentation!
-====================================
+Tabulate User Manual
+====================
 
 Tabulate is a user-friendly web database interface, designed to make it easy to work with relational tabular data.
 
 Quick-start
 -----------
 
-Looking for the **tl;dr**? Here it is!
+Looking for the `TL;DR`_? Here it is!
+
+.. _`TL;DR`: https://en.wikipedia.org/wiki/TL;DR
 
 1. Install the application (create ``config.php`` then run ``./tabulate upgrade``)
 2. Log in as ``admin`` with password ``admin``
 3. Go to the administration area and create some tables
 4. Start creating or importing data.
 
+Learning more
+-------------
+
 For more information, you can work through this documentation.
 It is written to be read in order but should be reasonably easy to dip into wherever you want.
+
+If anything doesn't make sense, or the operation of the software doesn't match what's here,
+we'd be very grateful if you could `raise an issue`_ on GitHub to let us know.
+
+.. _`raise an issue`: https://github.com/tabulate/tabulate3/issues
+
+We're trying to write Tabulate in a *test-first* manner,
+in that all new features and bug fixes are preceeded by test code that ensures their correct operation.
+We're also trying to *document-first*:
+no code, not even test cases, is written until the documentation has been created or updated
+to match what we're trying to make the software do.
+The stable_ version of the documentation, therefore, is complete and can be read as instructions of how to use Tabulate
+|---| the latest_ version, however, may at times be a bit *avant-garde*
+and not (yet) make any sense with respect to what you'll see on an installed site.
+
+.. _stable: http://tabulate.readthedocs.org/en/stable/index.html
+.. _latest: http://tabulate.readthedocs.org/en/latest/index.html
 
 Contents
 --------
@@ -29,11 +50,3 @@ Contents
 
    intro
    install
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

@@ -9,8 +9,7 @@ class HomeController extends ControllerBase
     {
         $template = new \Tabulate\Template('home.twig');
         $template->title = 'Welcome!';
-        $db = new \Tabulate\DB\Database();
-        $template->tables = $db->getTables();
+        $template->tables = $this->db->getTables();
         echo $template->render();
     }
 }
