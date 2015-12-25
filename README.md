@@ -2,6 +2,7 @@ Tabulate
 ========
 
 Tabulate is a user-friendly web interface to MySQL databases.
+For more information, please [read the docs](http://tabulate.readthedocs.org).
 
 [![Build Status](https://img.shields.io/travis/tabulate/tabulate3.svg?style=flat-square)](https://travis-ci.org/tabulate/tabulate3)
 [![Scrutinizer Code Quality](https://img.shields.io/scrutinizer/g/tabulate/tabulate3/master.svg?style=flat-square)](https://scrutinizer-ci.com/g/tabulate/tabulate3/?branch=master)
