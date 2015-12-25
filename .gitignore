@@ -1,8 +1,9 @@
-/vendor
-/.svn
+/vendor/
+/.svn/
 /testdox.html
 /tests/config.php
-/assets/components
+/assets/components/
 /nbproject/private/
 /config.php
-/data
+/data/
+/docs/_build/
