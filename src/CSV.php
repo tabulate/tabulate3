@@ -30,7 +30,7 @@ class CSV
      * exception.
      *
      * @param string $hash The hash of an in-progress import.
-     * @param array $uploaded The untouched 
+     * @param array $uploaded
      */
     public function __construct($hash = false, $uploaded = false)
     {
@@ -94,7 +94,7 @@ class CSV
 
     /**
      * Get the number of data rows in the file (i.e. excluding the header row).
-     * 
+     *
      * @return integer The number of rows.
      */
     public function rowCount()
@@ -109,7 +109,7 @@ class CSV
      */
     public function loaded()
     {
-        return $this->hash !== FALSE;
+        return $this->hash !== false;
     }
 
     /**
@@ -160,52 +160,56 @@ class CSV
 
         // Collect all errors.
         $errors = array();
-        for ($row_num = 1; $row_num <= $this->rowCount(); $row_num++) {
-            $pk_set = isset($this->data[$row_num][$pk_col_num]);
-            foreach ($this->data[$row_num] as $col_num => $value) {
-                if (!isset($heads[$col_num])) {
+        for ($rowNum = 1; $rowNum <= $this->rowCount(); $rowNum++) {
+            $pk_set = isset($this->data[$rowNum][$pk_col_num]);
+            foreach ($this->data[$rowNum] as $colNum => $value) {
+                if (!isset($heads[$colNum])) {
                     continue;
                 }
-                $col_errors = array();
-                $db_column_name = $heads[$col_num];
-                $column = $table->getColumn($db_column_name);
+                $colErrors = array();
+                $dbColumnName = $heads[$colNum];
+                $column = $table->getColumn($dbColumnName);
+                if ($column === false) {
+                    continue;
+                }
                 // Required, is not an update, has no default, and is empty
-                if ($column->is_required() && !$pk_set && !$column->get_default() && empty($value)) {
-                    $col_errors[] = 'Required but empty';
+                if ($column->isRequired() && !$pk_set && !$column->getDefault() && empty($value)) {
+                    $colErrors[] = 'Required but empty';
                 }
                 // Already exists, and is not an update.
                 if ($column->isUnique() && !$pk_set && $this->valueExists($table, $column, $value)) {
-                    $col_errors[] = "Unique value already present: '$value'";
+                    $colErrors[] = "Unique value already present: '$value'";
                 }
                 // Too long (if the column has a size and the value is greater than this)
-                if (!$column->isForeignKey() AND ! $column->isBoolean()
-                        AND $column->get_size() > 0
-                        AND strlen($value) > $column->get_size()) {
-                    $col_errors[] = 'Value (' . $value . ') too long (maximum length of ' . $column->get_size() . ')';
+                if (!$column->isForeignKey() && ! $column->isBoolean()
+                        && $column->get_size() > 0
+                        && strlen($value) > $column->get_size()) {
+                    $colErrors[] = 'Value (' . $value . ') too long (maximum length of ' . $column->get_size() . ')';
                 }
                 // Invalid foreign key value
-                if (!empty($value) AND $column->isForeignKey()) {
-                    $err = $this->validateForeignKey($column, $col_num, $row_num, $value);
-                    if ($err) {
-                        $col_errors[] = $err;
+                if (!empty($value) && $column->isForeignKey()) {
+                    try {
+                        $this->validateForeignKey($column, $value);
+                    } catch (\Exception $ex) {
+                        $colErrors[] = $ex->getMessage();
                     }
                 }
                 // Dates
-                if ($column->getType() == 'date' AND ! empty($value) AND preg_match('/\d{4}-\d{2}-\d{2}/', $value) !== 1) {
-                    $col_errors[] = 'Value (' . $value . ') not in date format';
+                if ($column->getType() == 'date' && !empty($value) && preg_match('/\d{4}-\d{2}-\d{2}/', $value) !== 1) {
+                    $colErrors[] = 'Value (' . $value . ') not in date format';
                 }
-                if ($column->getType() == 'year' AND ! empty($value) AND ( $value < 1901 || $value > 2155 )) {
-                    $col_errors[] = 'Year values must be between 1901 and 2155 (' . $value . ' given)';
+                if ($column->getType() == 'year' && !empty($value) && ( $value < 1901 || $value > 2155 )) {
+                    $colErrors[] = 'Year values must be between 1901 and 2155 (' . $value . ' given)';
                 }
 
-                if (count($col_errors) > 0) {
+                if (count($colErrors) > 0) {
                     // Construct error details array
                     $errors[] = array(
-                        'column_name' => $this->headers[$col_num],
-                        'column_number' => $col_num,
+                        'column_name' => $this->headers[$colNum],
+                        'column_number' => $colNum,
                         'field_name' => $column->getName(),
-                        'row_number' => $row_num,
-                        'messages' => $col_errors,
+                        'row_number' => $rowNum,
+                        'messages' => $colErrors,
                     );
                 }
             }
@@ -215,7 +219,7 @@ class CSV
 
     /**
      * Assume all data is now valid, and only FK values remain to be translated.
-     * 
+     *
      * @param DB\Table $table The table into which to import data.
      * @param array $column_map array of DB names to import names.
      * @return integer The number of rows imported.
@@ -261,32 +265,29 @@ class CSV
     }
 
     /**
-     * Determine whether a given value is valid for a foreign key (i.e. is the
-     * title of a foreign row).
-     * 
-     * @param \Tabulate\DB\Column $column
-     * @param integer $col_num
-     * @param integer $row_num
-     * @param string $value
-     * @return FALSE if the value is valid
-     * @return array error array if the value is not valid
+     * Determine whether a given value is valid for a foreign key (i.e. is the title of a foreign row).
+     *
+     * @param \Tabulate\DB\Column $column The foreign key column
+     * @param string $value The value to check
+     * @return true If the value is valid
+     * @throws Exception If the value is not valid
      */
-    protected function validateForeignKey($column, $col_num, $row_num, $value)
+    protected function validateForeignKey($column, $value)
     {
-        $foreign_table = $column->getReferencedTable();
-        if (!$this->getRecordsByTitle($foreign_table, $value)) {
-            $link = '<a href="' . $foreign_table->getUrl() . '" title="Opens in a new tab or window" target="_blank" >'
-                    . $foreign_table->getTitle()
+        $foreignTable = $column->getReferencedTable();
+        if (!$this->getRecordsByTitle($foreignTable, $value)) {
+            $link = '<a href="' . $foreignTable->getUrl() . '" title="Opens in a new tab or window" target="_blank" >'
+                    . $foreignTable->getTitle()
                     . '</a>';
-            return "Value <code>$value</code> not found in $link";
+            throw new \Exception("Value <code>$value</code> not found in $link");
         }
-        return false;
+        return true;
     }
 
     /**
      * Get the rows of a foreign table where the title column equals a given
      * value.
-     * 
+     *
      * @param DB\Table $table
      * @param string $value The value to match against the title column.
      * @return Database_Result
@@ -306,11 +307,10 @@ class CSV
      */
     protected function valueExists($table, $column, $value)
     {
-        $wpdb = $table->getDatabase()->get_wpdb();
         $sql = 'SELECT 1 FROM `' . $table->getName() . '` '
-                . 'WHERE `' . $column->getName() . '` = %s '
+                . 'WHERE `' . $column->getName() . '` = :value '
                 . 'LIMIT 1';
-        $exists = $wpdb->get_row($wpdb->prepare($sql, array($value)));
-        return !is_null($exists);
+        $exists = $table->getDatabase()->query($sql, ['value'=>$value])->fetchColumn();
+        return $exists;
     }
 }

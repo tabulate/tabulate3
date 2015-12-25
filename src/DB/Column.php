@@ -155,7 +155,7 @@ class Column
      *
      * @return mixed
      */
-    public function get_default()
+    public function getDefault()
     {
         if ($this->default_value == 'CURRENT_TIMESTAMP') {
             return date('Y-m-d h:i:s');
@@ -181,9 +181,9 @@ class Column
      *
      * @return boolean
      */
-    public function is_required()
+    public function isRequired()
     {
-        $has_default = ( $this->get_default() != null || $this->isAutoIncrement() );
+        $has_default = ( $this->getDefault() != null || $this->isAutoIncrement() );
         return (!$this->nullable() && !$has_default );
     }
 

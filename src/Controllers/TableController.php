@@ -155,7 +155,7 @@ class TableController extends ControllerBase
                 // existing records.
                 $missing = empty($_POST['columns'][$col->getName()]);
                 $pkPresent = isset($_POST['columns'][$table->getPkColumn()->getName()]);
-                if (!$pkPresent && $col->is_required() && $missing) {
+                if (!$pkPresent && $col->isRequired() && $missing) {
                     $errors[] = array(
                         'column_name' => '',
                         'column_number' => '',

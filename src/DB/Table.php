@@ -436,7 +436,7 @@ class Table
     {
         $row = array();
         foreach ($this->getColumns() as $col) {
-            $row[$col->getName()] = $col->get_default();
+            $row[$col->getName()] = $col->getDefault();
         }
         $record = new Record($this, $row);
         return $record;

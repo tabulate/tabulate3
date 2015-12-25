@@ -82,10 +82,10 @@ class SchemaTest extends TestBase
         // 'widget_size' is a not-null column with a default value.
         $test_table = $this->db->getTable('test_table');
         $widget_size_col = $test_table->getColumn('widget_size');
-        $this->assertFalse($widget_size_col->is_required());
+        $this->assertFalse($widget_size_col->isRequired());
         // 'title' is a not-null column with no default.
         $title_col = $test_table->getColumn('title');
-        $this->assertTrue($title_col->is_required());
+        $this->assertTrue($title_col->isRequired());
 
         // Create a basic record.
         $widget = array(
