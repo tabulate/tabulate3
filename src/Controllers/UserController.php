@@ -14,7 +14,7 @@ class UserController extends ControllerBase
 
     public function registerForm()
     {
-        $template = new \Tabulate\Template('register.twig');
+        $template = new \Tabulate\Template('users/register.twig');
         $template->title = 'Register';
         echo $template->render();
     }

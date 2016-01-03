@@ -21,7 +21,8 @@
         "components/bootstrap-default": "*",
         "eternicode/bootstrap-datepicker": "1.*",
         "eloquent/asplode": "^2.0",
-        "nayjest/str-case-converter": "^1.0"
+        "nayjest/str-case-converter": "^1.0",
+        "phing/phing": "^2.13"
     },
     "config": {
         "component-dir": "assets/components"

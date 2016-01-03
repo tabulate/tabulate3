@@ -24,16 +24,12 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
         if (!$db->getTable('users', false)) {
             $this->write("Creating table 'users'");
             $db->query("CREATE TABLE `users` ("
-                    . " `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                    . " `name` VARCHAR(200) NOT NULL UNIQUE,"
-                    . " `password` VARCHAR(100) NOT NULL"
-                    . ");");
-        }
-        if (!$db->getTable('users', false)) {
-            $this->write("Creating table 'users'");
-            $db->query("CREATE TABLE `users` ("
-                    . " `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                    . " `name` VARCHAR(200) NOT NULL UNIQUE"
+                    . " `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+                    . " `name` VARCHAR(200) NOT NULL UNIQUE, "
+                    . " `password` VARCHAR(100) NOT NULL, "
+                    . " `email` VARCHAR(200) NULL DEFAULT NULL,"
+                    . " `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+                    . " `verified` BOOLEAN DEFAULT FALSE "
                     . ");");
         }
         if (!$db->getTable('groups', false)) {
