@@ -11,6 +11,8 @@ class Grants extends \Tabulate\DB\Table
     const DELETE = 'delete';
     const IMPORT = 'import';
 
+    protected static $userGrants;
+
     public static function getPermissions()
     {
         return [
@@ -20,5 +22,9 @@ class Grants extends \Tabulate\DB\Table
             self::DELETE,
             self::IMPORT,
         ];
+    }
+
+    public static function checkGrant($permission, $tableName)
+    {
     }
 }

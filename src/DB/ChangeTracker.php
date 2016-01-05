@@ -95,8 +95,8 @@ class ChangeTracker
         }
 
         $changesetsTable = $this->db->getTable('changesets', false);
-        if (!$changesetsTable->getRecord(self::$currentChangesetId)) {
-            throw new \Exception("Failed to open changeset #".self::$currentChangesetId.' ('.$changesetsTable->getRecordCount().')');
+        if (!$changesetsTable || !$changesetsTable->getRecord(self::$currentChangesetId)) {
+            throw new \Exception("Failed to open changeset #".self::$currentChangesetId);
         }
 
         // Save a change for each changed column.

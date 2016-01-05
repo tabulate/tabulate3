@@ -2,8 +2,9 @@
 
 namespace Tabulate\DB;
 
-use Tabulate\Config;
-use Tabulate\DB\Tables\Users;
+use \Tabulate\Config;
+use \Tabulate\DB\Tables\Users;
+use \Tabulate\DB\Tables\Grants;
 
 class Database
 {
@@ -12,7 +13,7 @@ class Database
     static protected $pdo;
 
     /** @var array|string */
-    protected $table_names;
+    protected $tableNames;
 
     /** @var Table|array */
     protected $tables;
@@ -22,6 +23,9 @@ class Database
 
     /** @var integer The ID of the current user. */
     protected $currentUserId;
+
+    /** @var string[] Array of the users' grants. */
+    protected $userGrants;
 
     public function __construct()
     {
@@ -116,16 +120,17 @@ class Database
      */
     public function getTableNames($checkGrants = true)
     {
-        //if (!$this->table_names) {
-        $this->table_names = array();
-        foreach ($this->query('SHOW TABLES')->fetchAll() as $row) {
+        if (!$this->tableNames) {
+            $this->tableNames = $this->query('SHOW TABLES')->fetchAll();
+        }
+        $out = [];
+        foreach ($this->tableNames as $row) {
             $tableName = $row->{'Tables_in_' . Config::databaseName()};
-            if (!$checkGrants || $this->checkGrant(Tables\Grants::READ, $tableName)) {
-                $this->table_names[] = $tableName;
+            if (!$checkGrants || $this->checkGrant(Grants::READ, $tableName)) {
+                $out[] = $tableName;
             }
         }
-        //}
-        return $this->table_names;
+        return $out;
     }
 
     public function checkGrant($permission, $tableName)
@@ -133,18 +138,22 @@ class Database
         if ($tableName instanceof Table) {
             $tableName = $tableName->getName();
         }
-        $sql = "SELECT COUNT(*) "
+        if (!$this->userGrants) {
+            $sql = "SELECT table_name, permission, user "
                 . " FROM `grants` "
                 . "   JOIN `groups` ON `groups`.`id` = `grants`.`group` "
-                . "   JOIN `group_members` ON `group_members`.`group` = `groups`.`id`"
-                . " WHERE "
-                . "   (`table_name` = '*' OR `table_name` = :table_name) "
-                . "   AND (`permission` ='*' OR `permission` LIKE :permission) "
-                . "   AND (`group_members`.`user` = :user) ";
-        $params = ['table_name' => $tableName, 'permission' => $permission, 'user' => $this->currentUserId];
-        $grantCount = $this->query($sql, $params)->fetchColumn();
-        $perm = $grantCount > 0;
-        return $perm;
+                . "   JOIN `group_members` ON `group_members`.`group` = `groups`.`id`";
+            $this->userGrants = $this->query($sql)->fetchAll();
+        }
+        foreach ($this->userGrants as $grant) {
+            $thisUser = ($grant->user == $this->getCurrentUser());
+            $permGranted = ($grant->permission == $permission || $grant->permission == '*');
+            $tableGranted = ($grant->table_name == $tableName || $grant->table_name == '*');
+            if ($thisUser && $tableGranted && $permGranted) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function setCurrentUser($userId)
@@ -180,7 +189,7 @@ class Database
      */
     public function reset()
     {
-        $this->table_names = false;
+        $this->tableNames = false;
         $this->tables = false;
     }
 

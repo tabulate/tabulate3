@@ -58,6 +58,7 @@ class ChangeTrackerTest extends TestBase
     {
         $this->db->setCurrentUser(Users::ANON);
         $this->db->query("INSERT IGNORE INTO `grants` SET `group`=:group, `table_name`='test_table'", ['group' => Groups::GENERAL_PUBLIC]);
+        $this->db->reset();
 
         // Assert that the permissions are set as we want them.
         $this->assertTrue($this->db->checkGrant(Grants::CREATE, 'test_table'));

@@ -17,7 +17,7 @@ abstract class ControllerBase
     {
         $this->db = new Database();
         if (isset($_SESSION['user_id'])) {
-            $this->user = $this->db->query('SELECT * FROM users WHERE id=:id', ['id' => $_SESSION['user_id']])->fetch();
+            $this->user = $this->db->query('SELECT `id`, `name` FROM users WHERE id=:id', ['id' => $_SESSION['user_id']])->fetch();
             $this->db->setCurrentUser($this->user->id);
         }
     }
