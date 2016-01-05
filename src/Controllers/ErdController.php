@@ -37,6 +37,7 @@ class ErdController extends ControllerBase
     public function index()
     {
         $template = new \Tabulate\Template('erd/display.twig');
+        $template->user = $this->user;
         $template->title = 'ERD';
         $template->tables = $this->tables;
         $template->selectedTables = $this->selectedTables;

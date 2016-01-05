@@ -2,6 +2,7 @@
 
 namespace Tabulate\Controllers;
 
+use \Tabulate\Config;
 use \Tabulate\DB\Database;
 
 class MapController extends ControllerBase
@@ -35,7 +36,7 @@ class MapController extends ControllerBase
 
     protected function byline()
     {
-        return 'Tabulate ' . TABULATE_VERSION;
+        return 'Tabulate ' . Config::version();
     }
 
     public function osm($args)

@@ -26,7 +26,7 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
             $db->query("CREATE TABLE `users` ("
                     . " `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, "
                     . " `name` VARCHAR(200) NOT NULL UNIQUE, "
-                    . " `password` VARCHAR(100) NOT NULL, "
+                    . " `password` VARCHAR(255) NOT NULL, "
                     . " `email` VARCHAR(200) NULL DEFAULT NULL,"
                     . " `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
                     . " `verified` BOOLEAN DEFAULT FALSE "
@@ -56,7 +56,20 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
                     . " `group` INT(10) UNSIGNED NOT NULL,"
                     . " FOREIGN KEY (`group`) REFERENCES `groups` (`id`),"
                     . " `permission` VARCHAR(200) NOT NULL DEFAULT '*',"
-                    . " `table_name` VARCHAR(100) NOT NULL DEFAULT '*' "
+                    . " `table_name` VARCHAR(100) NOT NULL DEFAULT '*',"
+                    . " UNIQUE KEY (`group`, `permission`, `table_name`)"
+                    . ");");
+        }
+        if (!$db->getTable('sessions', false)) {
+            $this->write("Creating table 'sessions'");
+            $db->query("CREATE TABLE `sessions` ( "
+                    . " `id` VARCHAR(100) NOT NULL PRIMARY KEY, "
+                    . " `updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, "
+                    . " `ip_address` VARCHAR(45) NULL DEFAULT NULL, "
+                    . " `user` INT(10) UNSIGNED NULL DEFAULT NULL, "
+                    . " FOREIGN KEY (`user`) REFERENCES `users` (`id`), "
+                    . " `user_agent` TEXT NULL DEFAULT NULL, "
+                    . " `data` TEXT "
                     . ");");
         }
         if (!$db->getTable('changesets', false)) {
@@ -115,12 +128,16 @@ class UpgradeCommand extends \Tabulate\Commands\CommandBase
         $this->write("Confirming existance of administrative user, group, and grant");
 
         // Can't log changes without a user (admin, in this case). So we create a user manually.
-        $db->query("INSERT IGNORE INTO `users` SET `id`=:id, `name`=:name", ['id' => Users::ADMIN, 'name' => 'Administrator']);
-        // Then we want to create a second user (anon), but this time recording changes.
-        // The change-tracker needs to know about permissions, so before creating the 2nd user that we need to grant permission to admin.
-        // Permissions are granted to groups, not users, so we put admin in an admin group (manually).
-        $db->query("INSERT IGNORE INTO `groups` SET `id`=:id, `name`=:name", ['id' => Groups::ADMINISTRATORS, 'name' => 'Administrators']);
-        $db->query("INSERT IGNORE INTO `group_members` SET `user`=:user, `group`=:group", ['user' => Users::ADMIN, 'group' => Groups::ADMINISTRATORS]);
+        $pwd = password_hash('admin', PASSWORD_DEFAULT);
+        $adminUserData = ['id' => Users::ADMIN, 'name' => 'Admin', 'password' => $pwd];
+        $db->query("INSERT IGNORE INTO `users` SET `id`=:id, `name`=:name, `password`=:password", $adminUserData);
+        // Then we want to create a second user (anon), but this time recording changes. The change-tracker needs to
+        // know about permissions, so before creating the 2nd user that we need to grant permission to admin.
+        // Permissions are granted to groups, not users, so we put admin in an admin group first (manually).
+        $params2 = ['id' => Groups::ADMINISTRATORS, 'name' => 'Administrators'];
+        $db->query("INSERT IGNORE INTO `groups` SET `id`=:id, `name`=:name", $params2);
+        $params3 = ['user' => Users::ADMIN, 'group' => Groups::ADMINISTRATORS];
+        $db->query("INSERT IGNORE INTO `group_members` SET `user`=:user, `group`=:group", $params3);
         // Now we can grant everything (on everything) to the admin group.
         $db->query("INSERT IGNORE INTO `grants` SET `group`=:group", ['group' => Groups::ADMINISTRATORS]);
         // And finally 'reset' the DB so it knows about the above new records.

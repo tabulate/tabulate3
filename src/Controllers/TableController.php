@@ -3,7 +3,6 @@
 namespace Tabulate\Controllers;
 
 use \Tabulate\DB\Grants;
-use \Tabulate\DB\Database;
 use \Tabulate\Template;
 
 class TableController extends ControllerBase
@@ -11,8 +10,7 @@ class TableController extends ControllerBase
 
     private function getTable($tableName)
     {
-        $db = new Database();
-        $table = $db->getTable($tableName);
+        $table = $this->db->getTable($tableName);
         if (!$table) {
             http_response_code(404);
             throw new \Exception("Table '" . $tableName . "' not found.", 404);
@@ -56,6 +54,7 @@ class TableController extends ControllerBase
 
         // Give it all to the template.
         $template = new \Tabulate\Template('table.twig');
+        $template->user = $this->user;
         $template->controller = 'table';
         $template->table = $table;
         $template->tables = $table->getDatabase()->getTables();

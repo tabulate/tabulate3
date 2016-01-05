@@ -1,17 +1,21 @@
 {% extends "base.twig" %}
 {% block content %}
 
-    <form class="form-signin" action="{{baseurl}}/login">
-        <h2 class="form-signin-heading">Please sign in</h2>
-        <label for="inputEmail" class="sr-only">Email address</label>
-        <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
-        <label for="inputPassword" class="sr-only">Password</label>
-        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-        <div class="">
-            <label><input type="checkbox" value="remember-me"> Remember me</label>
-            <a href="{{baseurl}}/register">Register</a>
-        </div>
-        <button class="btn btn-primary btn-block" type="submit">Log in</button>
+    <h1>Log in</h1>
+    <form action="{{baseurl}}/login" method="post">
+        <p>
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" class="form-control" required autofocus />
+        </p>
+        <p>
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" class="form-control" required />
+        </p>
+        <p>
+            <button class="btn btn-primary" type="submit">Log in</button>
+        </p>
     </form>
+
+    <p>Don't have an account? <a href="{{baseurl}}/register">Register</a> one now.</p>
 
 {% endblock %}

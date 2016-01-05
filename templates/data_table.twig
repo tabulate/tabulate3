@@ -6,21 +6,21 @@
 	<thead>
 		<tr>
 			<th></th>
-			{% for column in table.get_columns %}
+			{% for column in table.getColumns %}
 			<th>
-				{{column.get_title}}
+				{{column.getTitle}}
 
 				{% if sortable %}
 				<span class="no-break sort-icons">
 
-					{% if table.get_order_by == column.getName and table.get_order_dir == 'asc' %}
+					{% if table.getOrderBy == column.getName and table.getOrderDir == 'asc' %}
 					<span class="dashicons dashicons-arrow-up" title="Sorted ascending"></span>
 					{% else %}
 					<a href="{{baseurl}}/table/{{table.getName}}?order_by={{column.getName}}&order_dir=asc"
 					   class="dashicons dashicons-arrow-up" title="Sort ascending"></a>
 					{% endif %}
 
-					{% if table.get_order_by == column.get_name and table.get_order_dir == 'desc'%}
+					{% if table.getOrderBy == column.getName and table.getOrderDir == 'desc'%}
 					<span class="dashicons dashicons-arrow-down" title="Sorted descending"></span>
 					{% else %}
 					<a href="{{baseurl}}/table/{{table.getName}}?order_by={{column.getName}}&order_dir=desc"
@@ -38,13 +38,13 @@
 		{% for record in records %}
 		<tr>
 			<td>
-				{% if links and table.is_updatable %}
+				{% if links and table.isUpdatable %}
 				<a href="{{baseurl}}/table/{{table.getName}}?return_to:{{return_to}}">Edit</a>
 				{% endif %}
 			</td>
-			{% for column in table.get_columns %}
-			<td class="type-{{column.get_type()}} {% if column.is_foreign_key %}is-foreign-key{% endif %}">
-				{% include 'field/view.html' %}
+			{% for column in table.getColumns %}
+			<td class="type-{{column.getType()}} {% if column.isForeignKey %}is-foreign-key{% endif %}">
+				{% include 'field/view.twig' %}
 			</td>
 			{% endfor %}
 		</tr>

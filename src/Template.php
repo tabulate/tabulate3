@@ -38,7 +38,7 @@ class Template
         $this->transientNotices = 'notices';
         $notices = isset($_SESSION[$this->transientNotices]) ? $_SESSION[$this->transientNotices] : array();
         $this->data = array(
-            'tabulate_version' => TABULATE_VERSION,
+            'tabulate_version' => Config::version(),
             'notices' => $notices,
             'baseurl' => Config::baseUrl(),
             'debug' => Config::debug(),

@@ -8,6 +8,7 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('POST', '/upgrade', 'UpgradeController::run');
     $r->addRoute('GET', '/login', 'UserController::loginForm');
     $r->addRoute('POST', '/login', 'UserController::login');
+    $r->addRoute('GET', '/logout', 'UserController::logout');
     $r->addRoute('GET', '/register', 'UserController::registerForm');
     $r->addRoute('POST', '/register', 'UserController::register');
 

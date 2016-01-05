@@ -5,6 +5,11 @@ namespace Tabulate;
 class Config
 {
 
+    public static function version()
+    {
+        return '3.0.0';
+    }
+
     public static function configFile()
     {
         $envConfig = getenv('TABULATE_CONFIG_FILE');

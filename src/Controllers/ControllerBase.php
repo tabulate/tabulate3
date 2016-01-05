@@ -16,6 +16,10 @@ abstract class ControllerBase
     public function __construct()
     {
         $this->db = new Database();
+        if (isset($_SESSION['user_id'])) {
+            $this->user = $this->db->query('SELECT * FROM users WHERE id=:id', ['id' => $_SESSION['user_id']])->fetch();
+            $this->db->setCurrentUser($this->user->id);
+        }
     }
 
     protected function redirect($route)

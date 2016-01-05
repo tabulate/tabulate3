@@ -2,7 +2,7 @@
 
 use Tabulate\DB\Tables\Users;
 
-class SchemaTest extends TestBase
+class UserTest extends TestBase
 {
 
     /**
