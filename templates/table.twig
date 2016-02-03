@@ -58,27 +58,27 @@
 
 		<!-- Right side -->
 		<div class="alignleft actions bulkactions">
-			<button data-controller="table" data-action="export" class="button"  title="Export to Comma Separated Values format">
+			<button data-controller="table" data-action="export" class="btn btn-default"  title="Export to Comma Separated Values format">
 				CSV
 			</button>
 			{% if table.get_columns('point') %}
-			<button data-controller="map" data-action="osm" class="button" title="Export to OpenStreetMap's XML format">
+			<button data-controller="map" data-action="osm" class="btn btn-default" title="Export to OpenStreetMap's XML format">
 				OSM
 			</button>
-			<button data-controller="map" data-action="kml" class="button" title="Export to KML">
+			<button data-controller="map" data-action="kml" class="btn btn-default" title="Export to KML">
 				KML
 			</button>
-			<button data-controller="map" data-action="gpx" class="button" title="Export to GPX">
+			<button data-controller="map" data-action="gpx" class="btn btn-default" title="Export to GPX">
 				GPX
 			</button>
 			{% endif %}
 		</div>
 
-		<!-- Left side -->
-		<div class='tablenav-pages'>
-			<span class="displaying-num">
-				{{record_count|number_format}} record{% if record_count != 1 %}s{% endif %}
-			</span>
+        <!-- Left side -->
+        <div class='tablenav-pages'>
+            <p class="displaying-num">
+                {{record_count|number_format}} record{% if record_count != 1 %}s{% endif %}
+            </p>
 
 			{% if table.get_page_count > 1 %}
 			<span class='pagination-links'>

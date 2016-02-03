@@ -22,6 +22,16 @@ abstract class ControllerBase
         }
     }
 
+    protected function getTable($tableName)
+    {
+        $table = $this->db->getTable($tableName);
+        if ($table === false) {
+            http_response_code(404);
+            throw new \Exception("Table '" . $tableName . "' not found.");
+        }
+        return $table;
+    }
+
     protected function redirect($route)
     {
         $url = \Tabulate\Config::baseUrl() . '/' . ltrim($route, '/ ');

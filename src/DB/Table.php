@@ -624,7 +624,7 @@ class Table
      */
     public function getColumn($name)
     {
-        return ( isset($this->columns[$name]) ) ? $this->columns[$name] : false;
+        return (isset($this->columns[$name])) ? $this->columns[$name] : false;
     }
 
     /**

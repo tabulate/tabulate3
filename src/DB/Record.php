@@ -2,6 +2,8 @@
 
 namespace Tabulate\DB;
 
+use \Tabulate\Config;
+
 class Record
 {
 
@@ -57,7 +59,7 @@ class Record
         $useTitle = substr($name, -strlen(self::FKTITLE)) == self::FKTITLE;
         if ($useTitle) {
             $name = substr($name, 0, -strlen(self::FKTITLE));
-            $col = $this->get_col($name);
+            $col = $this->getColumn($name);
             if ($col->isForeignKey() && !empty($this->data->$name)) {
                 $referencedTable = $col->getReferencedTable();
                 $fkRecord = $referencedTable->getRecord($this->data->$name);
@@ -70,7 +72,7 @@ class Record
                 return $fkRecord->$fkTitleColName();
             }
         }
-        $col = $this->get_col($name);
+        $col = $this->getColumn($name);
 
         // Booleans
         if ($col->isBoolean()) {
@@ -91,17 +93,16 @@ class Record
     }
 
     /**
-     * Get a column of this record's table, optionally throwing an Exception if
-     * it doesn't exist.
+     * Get a column of this record's table, optionally throwing an Exception if it doesn't exist.
      * @param boolean $required True if this should throw an Exception.
      * @return \Tabulate\DB\Column The column.
      * @throws \Exception If the column named doesn't exist.
      */
-    protected function get_col($name, $required = true)
+    protected function getColumn($name, $required = true)
     {
         $col = $this->table->getColumn($name);
         if ($required && $col === false) {
-            throw new \Exception("Unable to get column $name on table " . $this->table->getName());
+            throw new \Exception("Unable to get column '$name' on table '" . $this->table->getName() . "'");
         }
         return $col;
     }
@@ -198,5 +199,10 @@ class Record
                 . "LIMIT $limit";
         $params = array('table' => $this->table->getName(), 'ident' => $this->getPrimaryKey());
         return $this->table->getDatabase()->query($sql, $params)->fetchAll();
+    }
+
+    public function getUrl()
+    {
+        return Config::baseUrl().'/record/'. $this->table->getName() . '/' . $this->getPrimaryKey();
     }
 }

@@ -28,8 +28,8 @@ class RecordController extends ControllerBase
     public function index($args)
     {
         // Get database and table.
-        $db = new \Tabulate\DB\Database();
-        $table = $db->getTable($args['table']);
+        //$db = new \Tabulate\DB\Database();
+        $table = $this->getTable($args['table']);
 
         // Give it all to the template.
         $template = $this->getTemplate($table);

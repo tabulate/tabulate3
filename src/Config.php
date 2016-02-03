@@ -49,6 +49,11 @@ class Config
         return self::get('siteTitle', 'A Tabularium');
     }
 
+    public static function siteEmail()
+    {
+        return filter_var(self::get('siteEmail'), FILTER_VALIDATE_EMAIL);
+    }
+
     public static function databaseHost()
     {
         return self::get('databaseHost', 'localhost');

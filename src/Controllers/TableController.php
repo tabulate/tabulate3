@@ -8,22 +8,9 @@ use \Tabulate\Template;
 class TableController extends ControllerBase
 {
 
-    private function getTable($tableName)
-    {
-        $table = $this->db->getTable($tableName);
-        if (!$table) {
-            http_response_code(404);
-            throw new \Exception("Table '" . $tableName . "' not found.", 404);
-        }
-        return $table;
-    }
-
     public function index($args)
     {
         $table = $this->getTable($args['table']);
-        if (!$table instanceof \Tabulate\DB\Table) {
-            return $table;
-        }
 
         // Pagination.
         $page_num = (isset($args['p']) && is_numeric($args['p']) ) ? abs($args['p']) : 1;

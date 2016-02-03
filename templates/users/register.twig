@@ -2,26 +2,37 @@
 {% block content %}
 
     <h1>Register</h1>
-    <form class="" action="{{baseurl}}/register">
+    <form class="form-horizontal" action="{{baseurl}}/register" method="post">
 
-        <p>
-            <label>Name:</label>
-            <input type="text" id="name" class="form-control" />
+        <p class="form-group">
+            <label class="control-label col-md-2">Name:</label>
+            <span class="col-sm-10">
+                <input type="text" id="name" name="name" class="form-control focused" />
+            </span>
         </p>
 
-        <p>
-            <label>Email address</label>
-            <input type="email" id="email" class="form-control" />
+        <p class="form-group">
+            <label class="control-label col-md-2">Email address</label>
+            <span class="col-sm-10">
+                <input type="email" id="email" name="email" class="form-control" />
+            </span>
         </p>
 
-        <p>
-            <label for="password">Password</label>
-            <input type="password" id="password" class="form-control" />
+        <p class="form-group">
+            <label for="password" class="control-label col-md-2">Password</label>
+            <span class="col-md-5">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter password once here..." />
+            </span>
+            <span class="col-md-5">
+                <input type="password_verification" id="password_verification" name="password_verification" class="form-control" placeholder="...and repeat it here" />
+            </span>
         </p>
 
-        <p>
-            <button class="btn btn-primary" value="register" type="submit">Register</button>
-            <button class="btn btn-default" value="cancel" type="submit">Return to log in</button>
+        <p class="form-group">
+            <span class="col-md-offset-2 col-md-10">
+                <button class="btn btn-primary" value="register" type="submit">Register</button>
+                <button class="btn btn-default" value="cancel" type="submit">Return to log in</button>
+            </span>
         </p>
     </form>
 

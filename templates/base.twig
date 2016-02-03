@@ -13,7 +13,7 @@
         {% block head %}
         {% endblock %}
     </head>
-    <body>
+    <body class="">
         <div class="container-fluid">
 
             <ul class="list-inline text-right">
@@ -40,12 +40,14 @@
                         <li><a href="{{baseurl}}/table/{{view.getName}}">{{view.getTitle}}</a></li>
                         {% endfor %}
                     </ol>#}
+                    {% if tables %}
                     <h3>Tables:</h3>
                     <ol>
                         {% for table in tables %}
                         <li><a href="{{baseurl}}/table/{{table.getName}}">{{table.getTitle}}</a></li>
                         {% endfor %}
                     </ol>
+                    {% endif %}
                 </div>
                 <div class="col-md-9">
 
@@ -117,9 +119,10 @@
         {% endif %}
     </footer>
     <script src="{{baseurl}}/assets/components/jquery/jquery.min.js"></script>
-    <script src="{{baseurl}}/components/bootstrap/js/bootstrap.min.js"></script>
-    <script src="{{baseurl}}/components/bootstrap-datepicker/bootstrap-datepicker-built.js"></script>
-    <script src="{{baseurl}}/app.js"></script>
+    <script src="{{baseurl}}/assets/components/bootstrap/js/bootstrap.min.js"></script>
+    <script src="{{baseurl}}/assets/components/bootstrap-datepicker/bootstrap-datepicker-built.js"></script>
+    <script src="{{baseurl}}/assets/jquery.maskedinput.min.js"></script>
+    <script src="{{baseurl}}/assets/scripts.js"></script>
     {% block foot %}
     {% endblock %}
 </body>

@@ -2,7 +2,7 @@
 <p class="alert alert-success">No records found.</p>
 
 {% else %}
-<table class='wp-list-table widefat table tabulate'>
+<table class='table table-condensed'>
 	<thead>
 		<tr>
 			<th></th>
@@ -39,7 +39,7 @@
 		<tr>
 			<td>
 				{% if links and table.isUpdatable %}
-				<a href="{{baseurl}}/table/{{table.getName}}?return_to:{{return_to}}">Edit</a>
+				<a href="{{baseurl}}/record/{{table.getName}}/{{record.getPrimaryKey}}?return_to:{{return_to}}">Edit</a>
 				{% endif %}
 			</td>
 			{% for column in table.getColumns %}
