@@ -88,6 +88,9 @@ class Record
 
         // Standard column values.
         if (isset($this->data->$name)) {
+            if ($col->getType() === 'int') {
+                return (int) $this->data->$name;
+            }
             return $this->data->$name;
         }
     }

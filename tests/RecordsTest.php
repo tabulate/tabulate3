@@ -132,4 +132,83 @@ class RecordsTest extends TestBase
         $this->assertEquals(50, $typesReferenced->getRecordCount());
         $this->assertEquals(1, $typeCol->getReferencedTable()->getRecordCount());
     }
+
+    /**
+     * It is possible to provide multiple filter values, one per line.
+     *
+     * @test
+     */
+    public function multipleFilterValues()
+    {
+        // Set up some test data.
+        $types = $this->db->getTable('test_table');
+        $types->saveRecord(array('title' => "Type One", 'description' => ''));
+        $types->saveRecord(array('title' => "One Type", 'description' => 'One'));
+        $types->saveRecord(array('title' => "Type Two", 'description' => 'Two'));
+        $types->saveRecord(array('title' => "Four", 'description' => ' '));
+
+        // Search for 'One' and get 2 records.
+        $types->addFilter('description', 'in', "One\nTwo");
+        $this->assertEquals(2, $types->getRecordCount());
+
+        // Make sure empty lines are ignored in filter value.
+        $types->resetFilters();
+        $types->addFilter('description', 'in', "One\n\nTwo\n");
+        $this->assertEquals(2, $types->getRecordCount());
+    }
+
+    /**
+     * Empty values can be saved (where a field permits it).
+     *
+     * @test
+     */
+    public function saveNullValues()
+    {
+        // Get a table and make sure it is what we want it to be.
+        $testTable = $this->db->getTable('test_table');
+        $this->assertTrue($testTable->getColumn('description')->nullable());
+
+        // Save a record and check it.
+        $rec1a = $testTable->saveRecord(array('title' => "Test One", 'description' => 'Desc'));
+        $this->assertEquals(1, $rec1a->id());
+        $this->assertEquals('Desc', $rec1a->description());
+
+        // Save the same record to set 'description' to null.
+        $rec1b = $testTable->saveRecord(array('description' => ''), 1);
+        $this->assertEquals(1, $rec1b->id());
+        $this->assertEquals(null, $rec1b->description());
+
+        // Now repeat that, but with a nullable foreign key.
+        $this->db->getTable('test_types')->saveRecord([ 'title' => 'A type']);
+        $rec2a = $testTable->saveRecord(array('title' => 'Test Two', 'type_id' => 1));
+        $this->assertEquals(2, $rec2a->id());
+        $this->assertEquals('Test Two', $rec2a->title());
+        $this->assertEquals('A type', $rec2a->type_idFKTITLE());
+        $rec2b = $testTable->saveRecord(array('type_id' => ''), 2);
+        $this->assertEquals(2, $rec2b->id());
+        $this->assertEquals('Test Two', $rec2b->title());
+        $this->assertEquals(null, $rec2b->type_idFKTITLE());
+    }
+
+    /**
+     * Primary keys can be saved in various ways.
+     *
+     * @test
+     */
+    public function savePrimaryKeys()
+    {
+        $typesTable = $this->db->getTable('test_types');
+
+        // Normal new record.
+        $rec1 = $typesTable->saveRecord(['title'=>'Test 1']);
+        $this->assertSame(1, $rec1->id());
+
+        // New record with a specified PK.
+        $rec2 = $typesTable->saveRecord(['title'=>'Test 2', 'id'=>23]);
+        $this->assertSame(23, $rec2->id());
+
+        // New record with an empty PK.
+        $rec3 = $typesTable->saveRecord(['title'=>'Test 3', 'id'=>'']);
+        $this->assertSame(24, $rec3->id());
+    }
 }

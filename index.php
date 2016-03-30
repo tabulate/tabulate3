@@ -4,13 +4,15 @@ require_once __DIR__.'/bootstrap.php';
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/', 'HomeController::index');
-    $r->addRoute('GET', '/upgrade', 'UpgradeController::prompt');
-    $r->addRoute('POST', '/upgrade', 'UpgradeController::run');
     $r->addRoute('GET', '/login', 'UserController::loginForm');
     $r->addRoute('POST', '/login', 'UserController::login');
     $r->addRoute('GET', '/logout', 'UserController::logout');
     $r->addRoute('GET', '/register', 'UserController::registerForm');
     $r->addRoute('POST', '/register', 'UserController::register');
+    $r->addRoute('GET', '/remind/{userid}/{token}', 'UserController::remindResetForm');
+    $r->addRoute('POST', '/remind/{userid}/{token}', 'UserController::remindReset');
+    $r->addRoute('GET', '/remind', 'UserController::remindForm');
+    $r->addRoute('POST', '/remind', 'UserController::remind');
 
     $r->addRoute('GET', '/erd', 'ErdController::index');
     $r->addRoute('GET', '/erd.png', 'ErdController::render');

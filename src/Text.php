@@ -77,4 +77,16 @@ class Text
             return trim($out);
         }
     }
+
+    /**
+     * Split a string on line boundaries.
+     *
+     * @param string $val The string to split.
+     * @return string[] The resulting array.
+     */
+    public static function splitLines($val)
+    {
+        $vals = preg_split('/\n|\r|\r\n/', $val, -1, PREG_SPLIT_NO_EMPTY);
+        return array_filter(array_map('trim', $vals));
+    }
 }

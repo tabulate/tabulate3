@@ -40,7 +40,13 @@
                             <td>{{trace.function}}</td>
                             <td>{{trace.class}}</td>
                             <td>{{trace.type}}</td>
-                            <td>{{dump(trace.args)}}</td>
+                            <td>
+                                <ul>
+                                {% for a in trace.args %}
+                                <li>{{dump(a)}}</li>
+                                {% endfor %}
+                                </ul>
+                            </td>
                         </tr>
                     {% endfor %}
                 </table>

@@ -204,9 +204,8 @@ class Table
                 $whereClause .= " AND ($filterCol IS NOT NULL AND $filterCol != '')";
             } // IN or NOT IN
             elseif ($filter['operator'] == 'in' || $filter['operator'] == 'not in') {
-                $values = explode("\n", $filter['value']);
                 $placeholders = array();
-                foreach ($values as $valId => $val) {
+                foreach (\Tabulate\Text::splitLines($filter['value']) as $valId => $val) {
                     $placeholders[] = ':' . $paramName . '_' . $valId;
                     $params[$paramName . '_' . $valId] = trim($val);
                 }
@@ -222,10 +221,10 @@ class Table
         } // end foreach filter
         // Add clauses into SQL
         if (!empty($whereClause)) {
-            $where_clause_pattern = '/^(.* FROM .*?)((?:GROUP|HAVING|ORDER|LIMIT|$).*)$/m';
+            $whereClausePattern = '/^(.* FROM .*?)((?:GROUP|HAVING|ORDER|LIMIT|$).*)$/m';
             $whereClause = substr($whereClause, 5); // Strip leading ' AND'.
             $whereClause = "$1 $join_clause WHERE $whereClause $2";
-            $sql = preg_replace($where_clause_pattern, $whereClause, $sql);
+            $sql = preg_replace($whereClausePattern, $whereClause, $sql);
         }
 
         return $params;
@@ -960,6 +959,9 @@ class Table
                 // Empty strings.
                 $data[$field] = null;
                 $sqlValues[$field] = ":$field";
+            } elseif ('' === $value && $column->isAutoIncrement()) {
+                $data[$field] = null;
+                $sqlValues[$field] = ":$field";
             } elseif (is_null($value) && $column->nullable()) {
                 // Nulls.
                 $data[$field] = null;
@@ -982,11 +984,6 @@ class Table
             $itemsForSetClause[] = "`$field` = $escd_datum";
         }
         $setClause = 'SET ' . join(', ', $itemsForSetClause);
-
-        // Prevent PK from being set to empty.
-        if (isset($data[$pkName]) && empty($data[$pkName])) {
-            unset($data[$pkName]);
-        }
 
         if (isset($changeTracker)) {
             $changeTracker->beforeSave($this, $data, $pkValue);

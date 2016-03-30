@@ -64,31 +64,32 @@ class RecordController extends ControllerBase
         echo $template->render();
     }
 
+    /**
+     * Save the submitted data to this table.
+     *
+     * @param string[] $args
+     */
     public function save($args)
     {
-        $db = new \Tabulate\DB\Database();
-        $table = $db->getTable($args['table']);
-        if (!$table) {
-            // It shouldn't be possible to get here via the UI, so no message.
-            return false;
-        }
+        // Note that getTable will fail with a 404 if the table's not found.
+        $table = $this->getTable($args['table']);
 
-        $record_ident = isset($args['ident']) ? $args['ident'] : false;
+        $recordIdent = isset($args['ident']) ? $args['ident'] : false;
         $template = $this->getTemplate($table);
 
         // Make sure we're not saving over an already-existing record.
         $pk_name = $table->getPkColumn()->getName();
         $pk = (isset($_POST[$pk_name])) ? $_POST[$pk_name] : null;
-        if (!$record_ident && $pk) {
+        if (!$recordIdent && $pk) {
             $existing = $table->getRecord($pk);
             $template->addNotice('updated', "The record identified by '$pk' already exists.");
             $_REQUEST['return_to'] = $existing->get_url();
         } else {
             // Otherwise, create a new one.
             //try {
-            $db->query('BEGIN');
-            $template->record = $table->saveRecord($_POST, $record_ident);
-            $db->query('COMMIT');
+            $this->db->query('BEGIN');
+            $template->record = $table->saveRecord($_POST, $recordIdent);
+            $this->db->query('COMMIT');
             $template->addNotice('updated', 'Record saved.');
 //            } catch (\Exception $e) {
 //                echo $e->getMessage();
