@@ -155,33 +155,33 @@ class Record
     /**
      * Get the record that is referenced by this one from the column given.
      *
-     * @param string $column_name
+     * @param string $columnName
      * @return boolean|\Tabulate\DB\Record
      */
-    public function getReferencedRecord($column_name)
+    public function getReferencedRecord($columnName)
     {
-        if (!isset($this->data->$column_name)) {
+        if (!isset($this->data->$columnName)) {
             return false;
         }
         return $this->table
-                        ->getColumn($column_name)
+                        ->getColumn($columnName)
                         ->getReferencedTable()
-                        ->getRecord($this->data->$column_name);
+                        ->getRecord($this->data->$columnName);
     }
 
     /**
      * Get a list of records that reference this record in one of their columns.
      *
-     * @param string|\Tabulate\DB\Table $foreign_table
-     * @param string|\Tabulate\DB\Column $foreign_column
-     * @param boolean $with_pagination Whether to only return the top N records.
+     * @param string|\Tabulate\DB\Table $foreignTable
+     * @param string|\Tabulate\DB\Column $foreignColumn
+     * @param boolean $withPagination Whether to only return the top N records.
      * @return \Tabulate\DB\Record[]
      */
-    public function get_referencing_records($foreign_table, $foreign_column, $with_pagination = true)
+    public function getReferencingRecords($foreignTable, $foreignColumn, $withPagination = true)
     {
-        $foreign_table->resetFilters();
-        $foreign_table->addFilter($foreign_column, '=', $this->getPrimaryKey(), true);
-        return $foreign_table->getRecords($with_pagination);
+        $foreignTable->resetFilters();
+        $foreignTable->addFilter($foreignColumn, '=', $this->getPrimaryKey(), true);
+        return $foreignTable->getRecords($withPagination);
     }
 
     /**

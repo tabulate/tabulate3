@@ -54,6 +54,7 @@ class TableController extends ControllerBase
         $template->record = $table->getDefaultRecord();
         $template->records = $table->getRecords();
         $template->record_count = $table->getRecordCount();
+        $template->return_to = urlencode($table->getUrl());
         echo $template->render();
     }
 

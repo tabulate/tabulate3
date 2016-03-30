@@ -48,7 +48,7 @@ class RecordController extends ControllerBase
 //            }
             // Add query-string values.
             if (isset($args['defaults'])) {
-                $template->record->set_multiple($args['defaults']);
+                $template->record->setMultiple($args['defaults']);
             }
         }
         // Don't save to non-updatable views.
@@ -57,8 +57,10 @@ class RecordController extends ControllerBase
         }
 
         // Return to URL.
-        if (isset($args['return_to'])) {
-            $template->return_to = $args['return_to'];
+        if (isset($_GET['return_to'])) {
+            $template->return_to = $_GET['return_to'];
+        } else {
+            $template->return_to = $table->getUrl();
         }
 
         echo $template->render();
@@ -83,7 +85,7 @@ class RecordController extends ControllerBase
         if (!$recordIdent && $pk) {
             $existing = $table->getRecord($pk);
             $template->addNotice('updated', "The record identified by '$pk' already exists.");
-            $_REQUEST['return_to'] = $existing->get_url();
+            $_REQUEST['return_to'] = $existing->getUrl();
         } else {
             // Otherwise, create a new one.
             //try {
@@ -99,7 +101,7 @@ class RecordController extends ControllerBase
         }
         // Redirect back to the edit form.
         $return_to = (!empty($_REQUEST['return_to']) ) ? $_REQUEST['return_to'] : 'table/' . $table->getName() . '/' . $template->record->getPrimaryKey();
-        //$this->redirect($return_to);
+        $this->redirect($return_to);
     }
 
     public function delete($args)

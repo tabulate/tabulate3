@@ -1,8 +1,8 @@
-{% set fk_threshold = table.get_records_per_page %}
+{% set fk_threshold = table.getRecordsPerPage %}
 
-{% if column.is_foreign_key and column.get_referenced_table.count_records <= fk_threshold %}
+{% if column.isForeignKey and column.getReferencedTable.getRecordCount <= fk_threshold %}
 <select name="{{column.getName}}" id="{{column.getName}}" aria-describedby="{{column.getName}}-help"
-	{% if column.is_required %}required{% endif %} class="form-control"
+	{% if column.isRequired %}required{% endif %} class="form-control"
 	>
 	{% if column.nullable %}<option></option>{% endif %}
 	{% for row in column.get_referenced_table.get_records %}
@@ -25,7 +25,7 @@
 	<span class="input-group-addon">{{ attribute(record, column.getName) }}</span>
 	<input type="text" class="form-control" {% if column.is_required %}required{% endif %}
 		   data-fk-table="{{column.get_referenced_table.getName}}"
-		   value="{{ record.get_referenced_record(column.getName).get_title }}"
+		   value="{{ record.get_referenced_record(column.getName).getTitle }}"
 	/>
 </div>
 

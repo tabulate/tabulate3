@@ -441,7 +441,12 @@ class Table
         return $record;
     }
 
-    public function has_changes_recorded()
+    /**
+     * Whether or not this table has changes recorded.
+     *
+     * @return boolean
+     */
+    public function hasChangesRecorded()
     {
         return !in_array($this->getName(), ChangeTracker::tableNames());
     }
@@ -1040,16 +1045,12 @@ class Table
      */
     public function getUrl($action = 'index', $extra_params = false, $controller = 'table')
     {
-        $params = array(
-            'page' => 'tabulate',
-            'controller' => $controller,
-            'action' => $action,
-            'table' => $this->getName(),
-        );
+        $params = [];
         if (is_array($extra_params)) {
             $params = array_merge($_GET, $params, $extra_params);
         }
-        return Config::baseUrl() . '/table/' . $this->getName() . '?' . http_build_query($params);
+        $paramString = http_build_query($params);
+        return Config::baseUrl() . '/table/' . $this->getName() . (!empty($paramString) ? "?$paramString" : "");
     }
 
     /**

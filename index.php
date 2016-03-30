@@ -20,9 +20,9 @@ $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/table/{table:[a-z0-9_-]*}[.{format}]', 'TableController::index');
 
     $r->addRoute('GET', '/record/{table:[a-z0-9_-]*}', 'RecordController::index');
-    $r->addRoute('GET', '/record/{table:[a-z0-9_-]*}/{id:[0-9].*}[.{format}]', 'RecordController::index');
+    $r->addRoute('GET', '/record/{table:[a-z0-9_-]*}/{ident:[0-9].*}[.{format}]', 'RecordController::index');
     $r->addRoute('POST', '/record/{table:[a-z0-9_-]*}', 'RecordController::save');
-    $r->addRoute('POST', '/record/{table:[a-z0-9_-]*}/{id:[0-9].*}[.{format}]', 'RecordController::save');
+    $r->addRoute('POST', '/record/{table:[a-z0-9_-]*}/{ident:[0-9].*}[.{format}]', 'RecordController::save');
 });
 
 // Fetch method and URI from somewhere

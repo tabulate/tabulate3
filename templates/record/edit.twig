@@ -2,142 +2,144 @@
 
 {% block content %}
 
-<form method="post" action="{{baseurl}}/record/{{table.getName}}" class="form-inline">
+    <form method="post" action="{{baseurl}}/record/{{table.getName}}" class="form-inline">
 
-    {% for column in table.getColumns %}
-    <p>
-        <label for="{{column.getName}}" class="inline {% if column.is_required and not column.is_auto_increment %}text-warning{% endif %}">
-            {{column.getTitle}}
-        </label>
+        {% for column in table.getColumns %}
+            <p>
+                <label for="{{column.getName}}" class="inline {% if column.isRequired and not column.isAutoIncrement %}text-warning{% endif %}">
+                    {{column.getTitle}}
+                </label>
 
-        <!-- Data entry cell -->
-        {% include 'field/edit.twig' %}
-        <!-- End data entry cell -->
+                <!-- Data entry cell -->
+                {% include 'field/edit.twig' %}
+                <!-- End data entry cell -->
 
-        {%if column.get_comment %}<em>{{column.get_comment}}</em>{% endif %}
+                {%if column.getComment %}<em>{{column.getComment}}</em>{% endif %}
 
-        {% if column.is_unique %}
-        The value of this field must be unique.
+                {% if column.isUnique %}
+                    The value of this field must be unique.
+                {% endif %}
+
+                {% if column.isForeignKey %}
+                    This field is a cross reference to
+                    {% if attribute(record, column.getName) %}
+                        <a href="{{ record.getReferencedRecord(column.getName).getUrl }}">
+                            Record <em>{{attribute(record, column.getName)}}</em>
+                        </a>
+                        of
+                    {% endif %}
+                    <a href="{{baseurl}}/table/{{column.get_referenced_table.getName}}">{{column.get_referenced_table.getTitle}}</a>.
+                {% endif %}
+
+                {% if column.isAutoIncrement %}A value for this field will be assigned automatically.{% endif %}
+
+                {% if column.getType == 'year' %}
+                    Only the years 1901&ndash;2155 can be entered here.
+                    <a href="https://dev.mysql.com/doc/refman/5.6/en/year.html" target="_blank" title="The MySQL DATE type (opens in a new tab)">
+                        (Why?)
+                    </a>
+                {% endif %}
+
+            </p>
+        {% endfor %}
+
+        <div class="well">
+            <p>
+                <label for="changeset_comment" class="inline">Describe the changes you've made:</label>
+                <input type="text" id="changeset_comment" name="changeset_comment" class="form-control" size="80" />
+            </p>
+            <p>
+                <input type="submit" value="Save" class="btn btn-info" />
+                {% if return_to %}
+                    <input type="hidden" name="return_to" value="{{return_to}}" />
+                    <a href="{{return_to}}" class="btn btn-default">Cancel</a>
+                {% endif %}
+
+                {% if record.getPrimaryKey() %}
+                    <input type="hidden" name="primary_key_value" value="{{record.getPrimaryKey()}}" />
+                    <a href="{{record.getUrl('delete')}}" class="btn btn-default" title="Delete this record">Delete</a>
+                {% endif %}
+            </p>
+        </div>
+
+    </form>
+
+    {% if record.getPrimaryKey %}
+        <div class="record-meta">
+
+            <div class="referencing-tables">
+                {% for refinfo in table.getReferencingTables %}
+                    <div class="postbox related-records">
+                        {% set return_to = record.getUrl()~'#related-'~refinfo.table.getName() %}
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        <h3 class="hndle" id="related-{{refinfo.table.getName()}}">
+                            <span>
+                                {{refinfo.table.getTitle}} &mdash; related records
+                                (as <em>{{refinfo.column|titlecase}}</em>)
+                                <a href="{{refinfo.table.getUrl('index', {'filter[0][column]':refinfo.column,'filter[0][operator]':'=','filter[0][value]':record.getTitle()})}}"
+                                   class="button button-small">
+                                    View all
+                                </a>
+                                <a href="{{refinfo.table.getUrl('export', {'filter[0][column]':refinfo.column,'filter[0][operator]':'=','filter[0][value]':record.getTitle()})}}"
+                                   class="button button-small" title="Export related records to Comma Separated Values format">
+                                    CSV of all
+                                </a>
+                                {% set defaults_key = 'defaults['~refinfo.column~']' %}
+                                <a href="{{refinfo.table.getUrl('index', {(defaults_key):record.getPrimaryKey(), ident:'', return_to:return_to}, 'record')}}"
+                                   class="button button-small">
+                                    Add record
+                                </a>
+                            </span>
+                        </h3>
+                        <div class="inside">
+                        {% include 'data_table.twig' with { links:true, sortable:false, table:refinfo.table, records:record.getReferencingRecords(refinfo.table,refinfo.column), return_to:return_to } %}
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {% if table.hasChangesRecorded %}
+                    <div class="postbox closed">
+                        <div class="handlediv" title="Click to toggle"><br /></div>
+                        <h3 class="hndle"><span>History</span></h3>
+                        <div class="inside">
+                            <p>Recent changes made to this record.</p>
+                            <table class="tabulate-change-tracker">
+                                <thead>
+                                    <tr>
+                                        <th>Date and Time</th>
+                                        <th>Field</th>
+                                        <th>Old Value</th>
+                                        <th></th>
+                                        <th>New Value</th>
+                                        <th>User</th>
+                                        <th>Comment</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for change in record.getChanges %}
+                                        <tr>
+                                            <td>
+                                                <a href="admin.php?page=tabulate&controller=table&action=index&table={{wpdb_prefix}}tabulate_changesets&filter[0][column]=date_and_time&filter[0][operator]=%3D&filter[0][value]={{change.date_and_time}}">
+                                                    {{change.date_and_time}}
+                                                    {{change.date_and_time}}
+                                                </a>
+                                            </td>
+                                            <td>{{change.column_name|titlecase}}</td>
+                                            <td class="value">{{change.old_value}}</td>
+                                            <td>&rArr;</td>
+                                            <td class="value">{{change.new_value}}</td>
+                                            <td>{{change.user_nicename}}</td>
+                                            <td><em>{{change.comment}}</em></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
         {% endif %}
-
-        {% if column.is_foreign_key %}
-        This field is a cross reference to
-        {% if attribute(record, column.getName) %}
-        <a href="{{ record.get_referenced_record(column.getName).get_url }}">
-            Record <em>{{attribute(record, column.getName)}}</em>
-        </a>
-        of
-        {% endif %}
-        <a href="{{baseurl}}/table/{{column.get_referenced_table.getName}}">{{column.get_referenced_table.getTitle}}</a>.
-        {% endif %}
-
-        {% if column.is_auto_increment %}A value for this field will be assigned automatically.{% endif %}
-
-        {% if column.get_type == 'year' %}
-        Only the years 1901&ndash;2155 can be entered here.
-        <a href="https://dev.mysql.com/doc/refman/5.6/en/year.html" target="_blank" title="The MySQL DATE type (opens in a new tab)">
-            (Why?)
-        </a>
-        {% endif %}
-
-    </p>
-    {% endfor %}
-
-    <div class="well">
-        <p>
-            <label for="changeset_comment" class="inline">Describe the changes you've made:</label>
-            <input type="text" id="changeset_comment" name="changeset_comment" class="form-control" size="80" />
-        </p>
-        <p>
-            <input type="submit" value="Save" class="btn btn-info" />
-            {% if return_to %}
-            <input type="hidden" name="return_to" value="{{return_to}}" />
-            <a href="{{return_to}}" class="button">Cancel</a>
-            {% endif %}
-
-            {% if record.getPrimaryKey() %}
-            <input type="hidden" name="primary_key_value" value="{{record.getPrimaryKey()}}" />
-            <a href="{{record.get_url('delete')}}" class="btn btn-default" title="Delete this record">Delete</a>
-            {% endif %}
-        </p>
-    </div>
-
-</form>
-
-{% if record.getPrimaryKey %}
-<div class="metabox-holder columns-1"><div class="postbox-container record-meta">
-
-	{% for refinfo in table.get_referencing_tables %}
-	<div class="postbox related-records">
-		{% set return_to = record.get_url()~'#related-'~refinfo.table.getName() %}
-		<div class="handlediv" title="Click to toggle"><br /></div>
-		<h3 class="hndle" id="related-{{refinfo.table.getName()}}">
-			<span>
-				{{refinfo.table.get_title}} &mdash; related records
-				(as <em>{{refinfo.column|titlecase}}</em>)
-				<a href="{{refinfo.table.get_url('index', {'filter[0][column]':refinfo.column,'filter[0][operator]':'=','filter[0][value]':record.get_title()})}}"
-				   class="button button-small">
-					View all
-				</a>
-				<a href="{{refinfo.table.get_url('export', {'filter[0][column]':refinfo.column,'filter[0][operator]':'=','filter[0][value]':record.get_title()})}}"
-				   class="button button-small" title="Export related records to Comma Separated Values format">
-					CSV of all
-				</a>
-				{% set defaults_key = 'defaults['~refinfo.column~']' %}
-				<a href="{{refinfo.table.get_url('index', {(defaults_key):record.getPrimaryKey(), ident:'', return_to:return_to}, 'record')}}"
-				   class="button button-small">
-					Add record
-				</a>
-			</span>
-		</h3>
-		<div class="inside">
-		{% include 'data_table.html' with { links:true, sortable:false, table:refinfo.table, records:record.get_referencing_records(refinfo.table,refinfo.column), return_to:return_to } %}
-		</div>
-	</div>
-	{% endfor %}
-
-	{% if table.has_changes_recorded %}
-	<div class="postbox closed">
-		<div class="handlediv" title="Click to toggle"><br /></div>
-		<h3 class="hndle"><span>History</span></h3>
-		<div class="inside">
-			<p>Recent changes made to this record.</p>
-			<table class="tabulate-change-tracker">
-				<thead>
-					<tr>
-						<th>Date and Time</th>
-						<th>Field</th>
-						<th>Old Value</th>
-						<th></th>
-						<th>New Value</th>
-						<th>User</th>
-						<th>Comment</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for change in record.get_changes %}
-					<tr>
-						<td>
-							<a href="admin.php?page=tabulate&controller=table&action=index&table={{wpdb_prefix}}tabulate_changesets&filter[0][column]=date_and_time&filter[0][operator]=%3D&filter[0][value]={{change.date_and_time}}">
-							{{change.date_and_time}}
-							{{change.date_and_time}}
-							</a>
-						</td>
-						<td>{{change.column_name|titlecase}}</td>
-						<td class="value">{{change.old_value}}</td>
-						<td>&rArr;</td>
-						<td class="value">{{change.new_value}}</td>
-						<td>{{change.user_nicename}}</td>
-						<td><em>{{change.comment}}</em></td>
-					</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-	</div>
-	{% endif %}
-
-</div></div><!-- .postbox-container -->
-{% endif %}
 
 {% endblock %}

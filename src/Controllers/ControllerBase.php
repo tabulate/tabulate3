@@ -22,6 +22,13 @@ abstract class ControllerBase
         }
     }
 
+    /**
+     * Get a Table object.
+     *
+     * @param string $tableName
+     * @return \Tabulate\DB\Table
+     * @throws \Exception
+     */
     protected function getTable($tableName)
     {
         $table = $this->db->getTable($tableName);

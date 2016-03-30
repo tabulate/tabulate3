@@ -39,7 +39,7 @@
 		<tr>
 			<td>
 				{% if links and table.isUpdatable %}
-				<a href="{{baseurl}}/record/{{table.getName}}/{{record.getPrimaryKey}}?return_to:{{return_to}}">Edit</a>
+				<a href="{{baseurl}}/record/{{table.getName}}/{{record.getPrimaryKey}}?return_to={{return_to}}">Edit</a>
 				{% endif %}
 			</td>
 			{% for column in table.getColumns %}

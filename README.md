@@ -24,12 +24,14 @@ For more information, please [read the docs](http://tabulate.readthedocs.org).
 
 ## Restore
 
-1. Run the restore script: `./tabulate restore /path/to/backup_file.tgz`
+1. Reinstall Tabulate (see above)
+2. Run the restore script: `./tabulate restore /path/to/backup_file.tgz`
 
 ## Upgrade
 
-1. Update dependencies: `composer update`
-2. Run the upgrade script: `./tabulate upgrade`
+1. Update code: `git pull origin master`
+2. Update dependencies: `composer update`
+3. Run the upgrade script: `./tabulate upgrade`
 
 ## Features
 
